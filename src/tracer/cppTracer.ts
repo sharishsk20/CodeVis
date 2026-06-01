@@ -47,6 +47,28 @@ function findMainLine(code: string): number {
   return 1;
 }
 
+interface GccDiagnostic {
+  line:    number;
+  kind:    'error' | 'warning' | 'note';
+  message: string;
+}
+
+function parseGccDiagnostics(output: string): GccDiagnostic[] {
+  const results: GccDiagnostic[] = [];
+  for (const raw of output.split('\n')) {
+    // GCC format: prog.cc:LINE:COL: error: MESSAGE  (or warning/note)
+    const m = raw.match(/^[^:]+:(\d+):\d+:\s*(error|warning|note):\s*(.*)/);
+    if (m) {
+      results.push({
+        line:    parseInt(m[1], 10),
+        kind:    m[2] as GccDiagnostic['kind'],
+        message: m[3].trim(),
+      });
+    }
+  }
+  return results;
+}
+
 export async function traceCpp(code: string): Promise<TraceResult> {
   let wandbox: WandboxResponse;
   try {
@@ -58,9 +80,27 @@ export async function traceCpp(code: string): Promise<TraceResult> {
     };
   }
 
-  // Compilation failed
+  // Compilation failed — parse GCC diagnostics to highlight real error lines
   if (wandbox.status !== '0' && !wandbox.program_output) {
-    const msg = wandbox.compiler_error || wandbox.compiler_output || wandbox.compiler_message;
+    const msg  = wandbox.compiler_error || wandbox.compiler_output || wandbox.compiler_message;
+    const diag = parseGccDiagnostics(msg);
+
+    if (diag.length > 0) {
+      // Filter to errors first; fall back to all diagnostics
+      const errors = diag.filter((d) => d.kind === 'error');
+      const shown  = errors.length > 0 ? errors : diag;
+      const steps: TraceStep[] = shown.map((d, i) => ({
+        step:   i,
+        line:   d.line,
+        event:  'exception' as const,
+        stack:  [{ func: 'compilation', locals: {} }],
+        stdout: '',
+        note:   `${d.kind}: ${d.message}`,
+        error:  `${d.kind}: ${d.message}`,
+      }));
+      return { steps, error: `Compilation failed — ${shown[0].kind}: ${shown[0].message}` };
+    }
+
     return { steps: [], error: `Compilation error:\n${msg}` };
   }
 

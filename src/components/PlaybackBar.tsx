@@ -1,4 +1,4 @@
-import type { TraceEvent } from '../types/trace';
+import type { TraceEvent, TraceStep } from '../types/trace';
 
 interface Props {
   stepIdx:       number;
@@ -7,6 +7,7 @@ interface Props {
   speed:         number;
   event:         TraceEvent | undefined;
   note:          string | undefined;
+  steps:         TraceStep[];
   onPrev:        () => void;
   onNext:        () => void;
   onReset:       () => void;
@@ -18,9 +19,9 @@ interface Props {
 const SPEEDS = [[0.5, '½×'], [1, '1×'], [2, '2×'], [4, '4×']] as const;
 
 const EVENT_COLORS: Record<string, { bg: string; text: string; glow: string }> = {
-  call:      { bg: 'linear-gradient(135deg, rgba(56,189,248,0.18), rgba(168,85,247,0.15))', text: '#38bdf8', glow: '0 0 10px rgba(56,189,248,0.2)' },
-  return:    { bg: 'linear-gradient(135deg, rgba(29,158,117,0.18), rgba(34,211,238,0.15))', text: '#2dd4a8', glow: '0 0 10px rgba(29,158,117,0.2)' },
-  exception: { bg: 'linear-gradient(135deg, rgba(244,63,94,0.18), rgba(239,159,39,0.15))', text: '#f43f5e', glow: '0 0 10px rgba(244,63,94,0.2)' },
+  call:      { bg: 'rgba(56,189,248,0.12)',  text: '#38bdf8', glow: 'none' },
+  return:    { bg: 'rgba(29,158,117,0.12)',  text: '#2dd4a8', glow: 'none' },
+  exception: { bg: 'rgba(244,63,94,0.12)',   text: '#f43f5e', glow: 'none' },
   step:      { bg: 'rgba(255,255,255,0.05)', text: '#8b949e', glow: 'none' },
 };
 
@@ -62,23 +63,33 @@ function TransportBtn({ onClick, disabled, title, children, color }: {
   );
 }
 
+const MARKER_COLORS: Record<string, string> = {
+  call:      '#38bdf8',
+  return:    '#2dd4a8',
+  exception: '#f43f5e',
+};
+
 export default function PlaybackBar({
-  stepIdx, total, playing, speed, event, note,
+  stepIdx, total, playing, speed, event, note, steps,
   onPrev, onNext, onReset, onTogglePlay, onSpeedChange, onScrub,
 }: Props) {
   const pct = total > 1 ? (stepIdx / (total - 1)) * 100 : 0;
   const ev  = EVENT_COLORS[event ?? 'step'] ?? EVENT_COLORS.step;
 
+  const markers = steps
+    .map((s, i) => ({ i, event: s.event }))
+    .filter((m) => m.event !== 'step');
+
   return (
     <div style={{
       flexShrink: 0, borderTop: '1px solid var(--glass-border)',
-      background: 'linear-gradient(135deg, rgba(33,38,45,0.95), rgba(22,27,34,0.98))',
+      background: 'var(--bg-panel)',
       backdropFilter: 'blur(12px)',
     }}>
       {/* ── Progress scrubber ── */}
       <div style={{
-        position: 'relative', height: 4, cursor: 'pointer',
-        background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
+        position: 'relative', height: 6, cursor: 'pointer',
+        background: 'rgba(255,255,255,0.06)',
       }}
         onClick={(e) => {
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -86,14 +97,28 @@ export default function PlaybackBar({
           onScrub(Math.round(ratio * (total - 1)));
         }}
       >
+        {/* Fill */}
         <div style={{
           position: 'absolute', left: 0, top: 0, bottom: 0,
           width: `${pct}%`,
-          background: 'linear-gradient(90deg, #1d9e75, #22d3ee, #38bdf8)',
-          boxShadow: '0 0 12px rgba(34,211,238,0.4)',
+          background: '#1d9e75',
           transition: 'width 0.15s ease',
           borderRadius: '0 2px 2px 0',
         }} />
+        {/* Event markers */}
+        {markers.map((m) => {
+          const left = total > 1 ? (m.i / (total - 1)) * 100 : 0;
+          const color = MARKER_COLORS[m.event] ?? '#8b949e';
+          return (
+            <div key={m.i} title={m.event} style={{
+              position: 'absolute', top: '50%', transform: 'translateY(-50%)',
+              left: `${left}%`, marginLeft: -2,
+              width: 4, height: 4, borderRadius: '50%',
+              background: color, opacity: 0.75,
+              pointerEvents: 'none',
+            }} />
+          );
+        })}
         {/* Scrubber dot */}
         <div style={{
           position: 'absolute', top: '50%', transform: 'translateY(-50%)',
@@ -102,6 +127,7 @@ export default function PlaybackBar({
           background: '#22d3ee',
           boxShadow: '0 0 8px rgba(34,211,238,0.6)',
           transition: 'left 0.15s ease',
+          zIndex: 1,
         }} />
       </div>
 
@@ -119,14 +145,9 @@ export default function PlaybackBar({
           display: 'flex', alignItems: 'center', gap: 7,
           padding: '7px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 13,
           minWidth: 90, justifyContent: 'center', fontWeight: 600,
-          background: playing
-            ? 'linear-gradient(135deg, rgba(239,159,39,0.2), rgba(244,63,94,0.15))'
-            : 'linear-gradient(135deg, rgba(29,158,117,0.25), rgba(34,211,238,0.2))',
+          background: playing ? 'rgba(239,159,39,0.14)' : 'rgba(29,158,117,0.14)',
           border: `1px solid ${playing ? 'rgba(239,159,39,0.35)' : 'rgba(29,158,117,0.35)'}`,
           color: playing ? '#ef9f27' : '#2dd4a8',
-          boxShadow: playing
-            ? '0 0 18px rgba(239,159,39,0.2), inset 0 1px 0 rgba(255,255,255,0.05)'
-            : '0 0 18px rgba(29,158,117,0.2), inset 0 1px 0 rgba(255,255,255,0.05)',
           transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         }}>
           {playing ? (
@@ -173,12 +194,9 @@ export default function PlaybackBar({
             <button key={s} onClick={() => onSpeedChange(s)} style={{
               padding: '3px 9px', borderRadius: 6, fontSize: 11,
               cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: 600,
-              background: speed === s
-                ? 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(168,85,247,0.15))'
-                : 'rgba(255,255,255,0.03)',
+              background: speed === s ? 'rgba(56,189,248,0.14)' : 'rgba(255,255,255,0.03)',
               border: `1px solid ${speed === s ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.06)'}`,
               color: speed === s ? '#38bdf8' : 'var(--text-tertiary)',
-              boxShadow: speed === s ? '0 0 10px rgba(56,189,248,0.15)' : 'none',
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
             }}>{label}</button>
           ))}

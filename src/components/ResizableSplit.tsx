@@ -66,7 +66,7 @@ export default function ResizableSplit({
           width: 6,
           cursor: 'col-resize',
           background: dragging
-            ? 'linear-gradient(180deg, rgba(168,85,247,0.4), rgba(56,189,248,0.4))'
+            ? '#a855f7'
             : 'var(--border)',
           transition: dragging ? 'none' : 'background 0.2s ease',
           position: 'relative',

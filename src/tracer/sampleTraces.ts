@@ -126,3 +126,110 @@ export const SAMPLE_TRACES: Record<string, SampleTrace> = {
   python: PYTHON_SAMPLE,
   cpp:    CPP_SAMPLE,
 };
+
+// ─── Code presets (for the Examples picker) ──────────────────────────────────
+
+export interface Preset {
+  label: string;
+  code:  string;
+}
+
+export const PYTHON_PRESETS: Preset[] = [
+  {
+    label: 'Bubble Sort',
+    code:  PY_CODE,
+  },
+  {
+    label: 'Fibonacci (recursive)',
+    code: `def fib(n):
+    if n <= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)
+
+for i in range(8):
+    print(f"fib({i}) = {fib(i)}")`,
+  },
+  {
+    label: 'Binary Search',
+    code: `def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+
+nums = [1, 3, 5, 7, 9, 11, 13, 15]
+idx = binary_search(nums, 7)
+print(f"Found 7 at index {idx}")`,
+  },
+  {
+    label: 'Insertion Sort',
+    code: `def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+    return arr
+
+arr = [9, 4, 7, 2, 6]
+result = insertion_sort(arr)
+print(result)`,
+  },
+];
+
+export const CPP_PRESETS: Preset[] = [
+  {
+    label: 'Linked List',
+    code:  CPP_CODE,
+  },
+  {
+    label: 'Hello World',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, World!" << endl;
+    cout << "Welcome to CodeVis!" << endl;
+    return 0;
+}`,
+  },
+  {
+    label: 'FizzBuzz',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    for (int i = 1; i <= 20; i++) {
+        if (i % 15 == 0)      cout << "FizzBuzz\\n";
+        else if (i % 3 == 0)  cout << "Fizz\\n";
+        else if (i % 5 == 0)  cout << "Buzz\\n";
+        else                   cout << i << "\\n";
+    }
+    return 0;
+}`,
+  },
+  {
+    label: 'Fibonacci',
+    code: `#include <iostream>
+using namespace std;
+
+int main() {
+    int n = 12, a = 0, b = 1;
+    for (int i = 0; i < n; i++) {
+        cout << a << "\\n";
+        int t = a + b;
+        a = b;
+        b = t;
+    }
+    return 0;
+}`,
+  },
+];

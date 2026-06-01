@@ -58,16 +58,15 @@ export default function CodePane({
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '7px 12px', borderBottom: '1px solid var(--glass-border)',
-        background: 'linear-gradient(135deg, rgba(33,38,45,0.9), rgba(22,27,34,0.95))',
+        background: 'var(--bg-surface)',
         flexShrink: 0,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             width: 7, height: 7, borderRadius: '50%',
             background: editable
-              ? 'linear-gradient(135deg, #a855f7, #ec4899)'
-              : 'linear-gradient(135deg, #1d9e75, #22d3ee)',
-            boxShadow: editable ? '0 0 8px rgba(168,85,247,0.5)' : '0 0 8px rgba(29,158,117,0.5)',
+              ? '#a855f7'
+              : '#1d9e75',
           }} />
           <span style={{
             fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 600,
@@ -95,13 +94,10 @@ export default function CodePane({
               padding: '4px 12px', borderRadius: 6, fontSize: 11.5, fontWeight: 600,
               cursor: 'pointer',
               background: editable
-                ? 'linear-gradient(135deg, rgba(244,63,94,0.15), rgba(236,72,153,0.1))'
-                : 'linear-gradient(135deg, rgba(168,85,247,0.15), rgba(56,189,248,0.1))',
+                ? 'rgba(244,63,94,0.12)'
+                : 'rgba(168,85,247,0.12)',
               border: `1px solid ${editable ? 'rgba(244,63,94,0.25)' : 'rgba(168,85,247,0.2)'}`,
               color: editable ? '#f43f5e' : '#a855f7',
-              boxShadow: editable
-                ? '0 0 10px rgba(244,63,94,0.08)'
-                : '0 0 10px rgba(168,85,247,0.08)',
               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               display: 'flex', alignItems: 'center', gap: 4,
             }}
@@ -124,11 +120,9 @@ export default function CodePane({
                 cursor: loading ? 'not-allowed' : 'pointer',
                 background: loading
                   ? 'var(--bg-surface)'
-                  : 'linear-gradient(135deg, rgba(29,158,117,0.25), rgba(34,211,238,0.2))',
-                border: `1px solid ${loading ? 'var(--border)' : 'rgba(29,158,117,0.4)'}`,
+                  : 'rgba(29,158,117,0.14)',
+                border: `1px solid ${loading ? 'var(--border)' : 'rgba(29,158,117,0.35)'}`,
                 color: loading ? 'var(--text-tertiary)' : '#2dd4a8',
-                boxShadow: loading ? 'none' : '0 0 12px rgba(29,158,117,0.2)',
-                animation: loading ? 'none' : 'pulse-glow 2.5s ease-in-out infinite',
                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                 display: 'flex', alignItems: 'center', gap: 4,
               }}

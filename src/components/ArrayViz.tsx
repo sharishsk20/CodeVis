@@ -1,32 +1,32 @@
-/**
- * ArrayViz — animated bar chart for numeric arrays.
- *
- * Auto-detects the first numeric array in the top frame's locals.
- * Highlights the two elements being compared (amber) and the already-
- * sorted suffix (teal) based on i / j loop variables.
- */
-
 import type { TraceStep } from '../types/trace';
 
 interface Props {
   step: TraceStep | undefined;
 }
 
-function findArray(step: TraceStep | undefined): { arr: number[]; i: number; j: number } | null {
-  if (!step) return null;
-  const top = step.stack[step.stack.length - 1];
-  if (!top) return null;
+interface Found {
+  name: string;
+  arr:  number[];
+  i:    number;
+  j:    number;
+}
 
-  // Find the first local that is a numeric array (>= 2 elements)
-  for (const val of Object.values(top.locals)) {
-    if (
-      Array.isArray(val) &&
-      val.length >= 2 &&
-      val.every((x) => typeof x === 'number')
-    ) {
-      const i = typeof top.locals.i === 'number' ? top.locals.i : -1;
-      const j = typeof top.locals.j === 'number' ? top.locals.j : -1;
-      return { arr: val as number[], i, j };
+function findArray(step: TraceStep | undefined): Found | null {
+  if (!step) return null;
+  // Look in all frames, innermost first
+  for (let fi = step.stack.length - 1; fi >= 0; fi--) {
+    const frame = step.stack[fi];
+    const i = typeof frame.locals.i === 'number' ? frame.locals.i : -1;
+    const j = typeof frame.locals.j === 'number' ? frame.locals.j : -1;
+
+    for (const [name, val] of Object.entries(frame.locals)) {
+      if (
+        Array.isArray(val) &&
+        val.length >= 2 &&
+        val.every((x) => typeof x === 'number')
+      ) {
+        return { name, arr: val as number[], i, j };
+      }
     }
   }
   return null;
@@ -36,47 +36,54 @@ export default function ArrayViz({ step }: Props) {
   const found = findArray(step);
   if (!found) return null;
 
-  const { arr, i, j } = found;
-  const max        = Math.max(...arr, 1);
-  const n          = arr.length;
+  const { name, arr, i, j } = found;
+  const max       = Math.max(...arr, 1);
+  const n         = arr.length;
   const sortedFrom = i >= 0 ? n - i : n + 1;
-  // Only highlight comparison bars when on the if-check or swap line
-  const onCmpLine  = step?.line === 5 || step?.line === 6;
+  // Highlight j and j+1 whenever they're valid adjacent indices
+  const highlighting = j >= 0 && j + 1 < n;
 
   return (
     <div>
-      <SectionLabel>array state</SectionLabel>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', height: 100, padding: '0 4px' }}>
+      <SectionLabel>
+        {name}
+        <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
+          list[int] · {n} items
+        </span>
+      </SectionLabel>
+      <div style={{
+        display: 'flex', gap: 6, alignItems: 'flex-end', height: 96,
+        padding: '0 4px',
+      }}>
         {arr.map((v, x) => {
-          const isComparing = onCmpLine && (x === j || x === j + 1);
+          const isComparing = highlighting && (x === j || x === j + 1);
           const isSorted    = x >= sortedFrom;
-          const barH        = Math.max(6, Math.round((v / max) * 78));
 
-          const barColor = isComparing
-            ? '#BA7517'
-            : isSorted
-            ? '#0F6E56'
-            : 'var(--bg-hover)';
-          const numColor = isComparing
-            ? '#EF9F27'
-            : isSorted
-            ? '#1D9E75'
-            : 'var(--text-secondary)';
+          const barColor = isComparing ? '#a0650f' : isSorted ? '#0F6E56' : '#2d333b';
+
+          const numColor = isComparing ? '#EF9F27' : isSorted ? '#2dd4a8' : 'var(--text-secondary)';
+          const barH     = Math.max(6, Math.round((v / max) * 74));
 
           return (
-            <div key={x} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <div key={x} style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            }}>
               <span style={{
-                fontFamily: 'var(--font-mono)', fontSize: 11,
-                color: numColor, fontWeight: isComparing ? 600 : 400,
+                fontFamily: 'var(--font-mono)', fontSize: 10.5, color: numColor,
+                fontWeight: isComparing ? 700 : 400,
                 transition: 'color 0.2s',
               }}>{v}</span>
               <div style={{
-                width: '100%', borderRadius: 3,
-                height: barH,
-                background: barColor,
-                transition: 'height 0.3s ease, background 0.2s ease',
+                width: '100%', borderRadius: '3px 3px 2px 2px',
+                height: barH, background: barColor,
+                transition: 'height 0.28s cubic-bezier(0.4,0,0.2,1), background 0.2s ease',
+                boxShadow: isComparing ? '0 0 8px rgba(239,159,39,0.25)' : 'none',
+                outline: isComparing ? '1px solid rgba(239,159,39,0.3)' : 'none',
               }} />
-              <span style={{ fontSize: 9, color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>{x}</span>
+              <span style={{
+                fontSize: 9, color: x === j ? '#ef9f27' : x === j + 1 && highlighting ? '#ef9f2788' : 'var(--text-tertiary)',
+                fontFamily: 'var(--font-mono)',
+              }}>{x}</span>
             </div>
           );
         })}
@@ -85,13 +92,14 @@ export default function ArrayViz({ step }: Props) {
   );
 }
 
-// Shared section label style
+// ── Shared section label ──────────────────────────────────────────────────────
+
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
-      color: 'var(--text-tertiary)', marginBottom: 6,
-      textTransform: 'uppercase',
+      color: 'var(--text-tertiary)', marginBottom: 7,
+      textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4,
     }}>{children}</div>
   );
 }

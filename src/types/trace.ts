@@ -10,6 +10,7 @@ export interface StackFrame {
   func:     string;
   locals:   Record<string, TraceValue>;
   globals?: Record<string, TraceValue>;
+  types?:   Record<string, string>;
 }
 
 export interface HeapField {

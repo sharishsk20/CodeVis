@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import CodePane from './components/CodePane';
 import VizPane from './components/VizPane';
 import PlaybackBar from './components/PlaybackBar';
 import ResizableSplit from './components/ResizableSplit';
 import { useTracePlayer } from './hooks/useTracePlayer';
 import { tracePython, preloadPyodide } from './tracer/pythonTracer';
+import { traceCpp } from './tracer/cppTracer';
 import { SAMPLE_TRACES } from './tracer/sampleTraces';
 import type { Language } from './types/trace';
 
@@ -62,14 +63,10 @@ export default function App() {
   // ── Run code ─────────────────────────────────────────────────────────────
 
   const handleRun = async () => {
-    if (lang === 'cpp') {
-      setError('Live C/C++ execution is not supported yet — use the sample trace, or see README for the GDB backend plan.');
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
-      const result = await tracePython(code);
+      const result = lang === 'cpp' ? await traceCpp(code) : await tracePython(code);
       if (result.steps.length === 0) {
         setError(result.error ?? 'No trace steps generated.');
         return;
@@ -77,8 +74,7 @@ export default function App() {
       setSteps(result.steps);
       setIsEditing(false);
       if (result.error) {
-        // Partial trace with an exception — show it but surface the error
-        setError(`Runtime error: ${result.error}`);
+        setError(result.error);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

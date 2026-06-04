@@ -7,6 +7,7 @@ import { useTracePlayer } from './hooks/useTracePlayer';
 import { tracePython, preloadPyodide } from './tracer/pythonTracer';
 import { traceCpp } from './tracer/cppTracer';
 import { SAMPLE_TRACES, PYTHON_PRESETS, CPP_PRESETS } from './tracer/sampleTraces';
+import type { Preset } from './tracer/sampleTraces';
 import type { Language } from './types/trace';
 
 // ─── Initial state: Python sample trace ─────────────────────────────────────
@@ -76,10 +77,15 @@ export default function App() {
 
   // ── Preset select ────────────────────────────────────────────────────────
 
-  const handlePreset = (presetCode: string) => {
-    setCode(presetCode);
-    setSteps([]);
-    setIsEditing(true);
+  const handlePreset = (preset: Preset) => {
+    setCode(preset.code);
+    if (preset.sampleTrace) {
+      setSteps(preset.sampleTrace);
+      setIsEditing(false);
+    } else {
+      setSteps([]);
+      setIsEditing(true);
+    }
     setError(null);
     setExOpen(false);
   };
@@ -202,7 +208,7 @@ export default function App() {
               {presets.map((p) => (
                 <button
                   key={p.label}
-                  onClick={() => handlePreset(p.code)}
+                  onClick={() => handlePreset(p)}
                   style={{
                     display: 'block', width: '100%', textAlign: 'left',
                     padding: '7px 10px', borderRadius: 7, border: 'none',

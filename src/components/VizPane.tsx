@@ -1,5 +1,6 @@
 import type { TraceStep } from '../types/trace';
 import ArrayViz from './ArrayViz';
+import SearchViz, { isSearchStep } from './SearchViz';
 import StackPanel from './StackPanel';
 import HeapDiagram from './HeapDiagram';
 import { SectionLabel } from './ArrayViz';
@@ -164,8 +165,11 @@ export default function VizPane({ step, prevStep }: Props) {
           flex: 1, overflowY: 'auto', padding: 14,
           display: 'flex', flexDirection: 'column', gap: 16,
         }}>
-          {/* Array bars — Python sorting algorithms */}
-          <ArrayViz step={step} />
+          {/* Search cell grid — linear / binary search */}
+          <SearchViz step={step} />
+
+          {/* Array bars — sorting algorithms (skip when showing search viz) */}
+          {!isSearchStep(step) && <ArrayViz step={step} />}
 
           {/* Heap — C++ */}
           {step.heap && (

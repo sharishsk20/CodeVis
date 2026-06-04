@@ -131,6 +131,8 @@ export default function App() {
         background: 'var(--bg-panel)',
         backdropFilter: 'blur(12px)',
         flexShrink: 0,
+        position: 'relative',
+        zIndex: 100,
       }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

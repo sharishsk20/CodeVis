@@ -199,6 +199,7 @@ export default function App() {
               border: '1px solid var(--border)',
               borderRadius: 10, padding: 4, minWidth: 196,
               boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+              maxHeight: 'calc(100vh - 80px)', overflowY: 'auto',
             }}>
               <div style={{
                 padding: '4px 10px 6px', fontSize: 9.5, fontWeight: 600,

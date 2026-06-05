@@ -29,3 +29,10 @@ dist-ssr/
 
 # Vercel
 .vercel
+
+# Verification files and screenshots
+verify_*.png
+vv_*.png
+verify_search.mjs
+verify_vercel.mjs
+

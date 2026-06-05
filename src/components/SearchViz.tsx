@@ -45,10 +45,21 @@ interface SF {
 
 // ── Detection ─────────────────────────────────────────────────────────────────
 
+// Common aliases users write for search variable names
+const LO_KEYS     = ['lo','low','left','l','start','begin','lb'] as const;
+const HI_KEYS     = ['hi','high','right','r','end','last','ub']  as const;
+const MID_KEYS    = ['mid','m','middle','pivot','center','median'] as const;
+// Deliberately excludes 'key'/'val'/'value' — used by insertion sort / data structures
+const TARGET_KEYS = ['target','query','num','find','search_val','needle','x_val'] as const;
+const IDX_KEYS    = ['i','idx','j','index','curr','cur','current'] as const;
+
 function detect(step: TraceStep | undefined): SF | null {
   if (!step) return null;
   for (let fi = step.stack.length - 1; fi >= 0; fi--) {
     const L = step.stack[fi].locals;
+    const funcName = step.stack[fi].func.toLowerCase();
+
+    // Find numeric array in locals
     let name = '', arr: number[] | null = null;
     for (const [k, v] of Object.entries(L)) {
       if (Array.isArray(v) && v.length >= 2 && v.every((x) => typeof x === 'number')) {
@@ -56,10 +67,23 @@ function detect(step: TraceStep | undefined): SF | null {
       }
     }
     if (!arr) continue;
-    const target = typeof L.target === 'number' ? L.target : null;
-    if (target === null) continue;
-    const g = (k: string) => typeof L[k] === 'number' ? (L[k] as number) : undefined;
 
+    // Find target — exact name first, then common aliases
+    let target: number | null = null;
+    for (const tk of TARGET_KEYS) {
+      if (typeof L[tk] === 'number') { target = L[tk] as number; break; }
+    }
+    if (target === null) continue;
+
+    // Get numeric local by exact key
+    const g = (k: string) => typeof L[k] === 'number' ? (L[k] as number) : undefined;
+    // Get numeric local by first matching alias
+    const ga = (...keys: readonly string[]) => {
+      for (const k of keys) if (typeof L[k] === 'number') return L[k] as number;
+      return undefined;
+    };
+
+    // ── Exact preset detection (highest priority) ────────────────────────────
     if (g('fib_m2') !== undefined)
       return { kind:'fibonacci', name, arr, target,
         fib_m:g('fib_m'), fib_m1:g('fib_m1'), fib_m2:g('fib_m2'),
@@ -79,8 +103,49 @@ function detect(step: TraceStep | undefined): SF | null {
     if (g('lo') !== undefined || g('hi') !== undefined)
       return { kind:'binary', name, arr, target,
         lo:g('lo'), hi:g('hi'), mid:g('mid') };
-    return { kind:'linear', name, arr, target,
-      current: g('i') ?? g('idx') };
+
+    // ── Alias + function-name detection (custom user code) ──────────────────
+    const lo  = ga(...LO_KEYS);
+    const hi  = ga(...HI_KEYS);
+    const mid = ga(...MID_KEYS);
+    const isFn = (pat: RegExp) => pat.test(funcName);
+
+    if (isFn(/fib/) || g('fib_m1') !== undefined)
+      return { kind:'fibonacci', name, arr, target,
+        fib_m:  ga('fib_m','fibm','fm'),
+        fib_m1: ga('fib_m1','fibm1','fm1'),
+        fib_m2: ga('fib_m2','fibm2','fm2'),
+        offset: g('offset'), probe: ga(...IDX_KEYS) };
+
+    if (isFn(/ternary/) || g('mid2') !== undefined)
+      return { kind:'ternary', name, arr, target,
+        lo, hi,
+        mid1: ga('mid1','m1','left_mid','lm','mid_left'),
+        mid2: ga('mid2','m2','right_mid','rm','mid_right') };
+
+    if (isFn(/exp(?:onential)?search|exp_search/))
+      return { kind:'exponential', name, arr, target,
+        bound: ga('bound','b','boundary','bnd'), lo, hi, mid };
+
+    if (isFn(/interp/)) {
+      const pos = ga('pos','probe','position','p') ?? ga(...IDX_KEYS);
+      return { kind:'interpolation', name, arr, target, lo, hi, pos };
+    }
+
+    if (isFn(/jump/)) {
+      return { kind:'jump', name, arr, target,
+        step:  ga('step','block_size','block','step_size','s'),
+        prev:  ga('prev','prev_block','prev_step'),
+        check: ga('check','i','idx','j') };
+    }
+
+    if (isFn(/binary|bisect/) || lo !== undefined || hi !== undefined)
+      return { kind:'binary', name, arr, target, lo, hi, mid };
+
+    // Linear search — any remaining case with a search-looking function or index variable
+    const current = ga(...IDX_KEYS);
+    if (isFn(/linear|search|find/) || current !== undefined)
+      return { kind:'linear', name, arr, target, current };
   }
   return null;
 }

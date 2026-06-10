@@ -303,16 +303,52 @@ export default function DsViz({ step }: Props) {
 // ── Sub-components for Visualizing ──
 
 function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
+  const nodeCount = nodes.length;
+
+  // Determine if a label is a "head-like" pointer
+  const isHeadLabel = (lbl: string) =>
+    /head|root|list|first|start/i.test(lbl);
+
   return (
     <div>
-      <SectionLabel>linked list state</SectionLabel>
+      <SectionLabel>
+        linked list
+        <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
+          {nodeCount} node{nodeCount !== 1 ? 's' : ''}
+        </span>
+      </SectionLabel>
+
       <div style={{
         display: 'flex', alignItems: 'center', gap: 0,
-        overflowX: 'auto', padding: '28px 8px 24px',
+        overflowX: 'auto', padding: '36px 12px 32px',
         scrollBehavior: 'smooth',
       }}>
+        {/* HEAD indicator arrow before first node */}
+        {nodeCount > 0 && (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            marginRight: 6, flexShrink: 0,
+          }}>
+            <span style={{
+              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              color: '#34d399', letterSpacing: '0.06em', marginBottom: 4,
+            }}>HEAD</span>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+              <path d="M2 6 H18 M14 2 L20 6 L14 10" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+
         {nodes.map((node, idx) => {
           const hasPointers = node.labels.length > 0;
+          const isFirst = idx === 0;
+          const isLast = idx === nodeCount - 1;
+
+          // Node accent color based on pointer labels
+          const nodeAccent = hasPointers
+            ? (node.labels.some(isHeadLabel) ? '#2dd4a8' : '#38bdf8')
+            : 'var(--border)';
+
           return (
             <React.Fragment key={node.id}>
               {/* Node layout */}
@@ -320,97 +356,191 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                 position: 'relative', flexShrink: 0,
               }}>
-                {/* Pointer variables list above node */}
+                {/* Pointer variable labels above node */}
                 <div style={{
-                  position: 'absolute', top: -26,
-                  display: 'flex', gap: 4, height: 20,
+                  position: 'absolute', top: -30,
+                  display: 'flex', gap: 5, height: 24,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {node.labels.map(lbl => (
-                    <span key={lbl} style={{
-                      fontSize: 10.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                      background: lbl === 'head' ? 'rgba(29,158,117,0.15)' : 'rgba(56,189,248,0.15)',
-                      color: lbl === 'head' ? '#2dd4a8' : '#38bdf8',
-                      border: `1.5px solid ${lbl === 'head' ? 'rgba(29,158,117,0.45)' : 'rgba(56,189,248,0.45)'}`,
-                      padding: '2px 7px', borderRadius: 5,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                    }}>{lbl}</span>
-                  ))}
+                  {node.labels.map(lbl => {
+                    const isHead = isHeadLabel(lbl);
+                    const pillColor = isHead ? '#2dd4a8' : '#38bdf8';
+                    const pillBg = isHead ? 'rgba(29,158,117,0.12)' : 'rgba(56,189,248,0.12)';
+                    const pillBorder = isHead ? 'rgba(29,158,117,0.4)' : 'rgba(56,189,248,0.4)';
+                    return (
+                      <div key={lbl} style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      }}>
+                        <span style={{
+                          fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                          background: pillBg, color: pillColor,
+                          border: `1.5px solid ${pillBorder}`,
+                          padding: '2px 10px', borderRadius: 6,
+                          boxShadow: `0 2px 10px rgba(0,0,0,0.25), 0 0 8px ${pillColor}15`,
+                          letterSpacing: '0.02em',
+                        }}>{lbl}</span>
+                        {/* Arrow from label down to node */}
+                        <svg width="8" height="6" viewBox="0 0 8 6" fill="none" style={{ marginTop: -1 }}>
+                          <path d="M4 0 L4 6" stroke={pillColor} strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    );
+                  })}
                 </div>
 
-                {/* Node Box */}
+                {/* Node Box — larger and more prominent */}
                 <div style={{
-                  display: 'flex', height: 48, minWidth: 100,
-                  background: 'var(--bg-surface)',
-                  border: `2px solid ${hasPointers ? '#22d3ee' : 'var(--border)'}`,
-                  borderRadius: 8, overflow: 'hidden',
-                  boxShadow: hasPointers ? '0 0 16px rgba(34,211,238,0.25)' : 'none',
-                  transition: 'all 0.25s ease',
+                  display: 'flex', height: 60, minWidth: 140,
+                  background: hasPointers
+                    ? `linear-gradient(135deg, var(--bg-surface), rgba(${nodeAccent === '#2dd4a8' ? '29,158,117' : '56,189,248'},0.04))`
+                    : 'var(--bg-surface)',
+                  border: `2.5px solid ${hasPointers ? nodeAccent : 'var(--border)'}`,
+                  borderRadius: 10, overflow: 'hidden',
+                  boxShadow: hasPointers
+                    ? `0 0 20px ${nodeAccent}20, 0 4px 16px rgba(0,0,0,0.3)`
+                    : '0 4px 12px rgba(0,0,0,0.2)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}>
-                  {/* Left part: Val */}
+                  {/* Left: Data field */}
                   <div style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '0 12px', fontSize: 16, fontFamily: 'var(--font-mono)',
-                    fontWeight: 700, color: 'var(--text-primary)',
+                    flex: 1, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    padding: '0 16px', position: 'relative',
                     borderRight: '2px solid var(--border)',
                   }}>
-                    {node.val}
+                    <span style={{
+                      fontSize: 8, fontFamily: 'var(--font-mono)', fontWeight: 600,
+                      color: 'var(--text-tertiary)', letterSpacing: '0.06em',
+                      position: 'absolute', top: 4, left: 8,
+                    }}>DATA</span>
+                    <span style={{
+                      fontSize: 20, fontFamily: 'var(--font-mono)',
+                      fontWeight: 800, color: 'var(--text-primary)',
+                      letterSpacing: '-0.01em',
+                    }}>
+                      {node.val}
+                    </span>
                   </div>
-                  {/* Right part: Pointer */}
+
+                  {/* Right: Pointer field */}
                   <div style={{
-                    width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(255,255,255,0.015)', position: 'relative',
+                    width: 44, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.02)', position: 'relative',
                   }}>
+                    <span style={{
+                      fontSize: 7, fontFamily: 'var(--font-mono)', fontWeight: 600,
+                      color: 'var(--text-tertiary)', letterSpacing: '0.06em',
+                      position: 'absolute', top: 4,
+                    }}>NEXT</span>
+                    {/* Pointer dot */}
                     <div style={{
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: node.nextId ? '#22d3ee' : '#484f58',
+                      width: 10, height: 10, borderRadius: '50%',
+                      background: node.nextId
+                        ? 'radial-gradient(circle, #22d3ee, #0ea5e9)'
+                        : '#484f58',
+                      boxShadow: node.nextId
+                        ? '0 0 8px rgba(34,211,238,0.4)'
+                        : 'none',
+                      transition: 'all 0.3s ease',
                     }} />
                   </div>
                 </div>
 
-                {/* Address label below node - big and readable */}
-                <span style={{
-                  fontSize: 11.5, fontFamily: 'var(--font-mono)', fontWeight: 600,
-                  color: '#58a6ff', marginTop: 6,
-                  textShadow: '0 0 1px rgba(88,166,255,0.2)',
-                }}>{node.id}</span>
+                {/* Address label below node — pill style */}
+                <div style={{
+                  marginTop: 8, padding: '2px 10px', borderRadius: 5,
+                  background: 'rgba(88,166,255,0.06)',
+                  border: '1px solid rgba(88,166,255,0.15)',
+                }}>
+                  <span style={{
+                    fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                    color: '#58a6ff',
+                    textShadow: '0 0 2px rgba(88,166,255,0.15)',
+                    letterSpacing: '0.02em',
+                  }}>{node.id}</span>
+                </div>
               </div>
 
-              {/* Arrow Connector */}
+              {/* Arrow Connector — wider, more prominent */}
               <div style={{
                 display: 'flex', alignItems: 'center',
-                width: 40, justifyContent: 'center',
-                flexShrink: 0, marginTop: -16,
+                width: 56, justifyContent: 'center',
+                flexShrink: 0, marginTop: -20,
               }}>
-                <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
-                  <path
-                    d={node.nextId ? "M0 8 H28 M22 3 L29 8 L22 13" : "M0 8 H22 M18 3 L10 13"}
-                    stroke={node.nextId ? "#22d3ee" : "#8b949e"}
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeDasharray={node.nextId ? undefined : "3,3"}
-                  />
-                  {!node.nextId && (
-                    <text x="17" y="14" fontSize="7" fontFamily="monospace" fill="#8b949e" fontWeight="bold">X</text>
-                  )}
-                </svg>
+                {node.nextId ? (
+                  <svg width="48" height="20" viewBox="0 0 48 20" fill="none">
+                    {/* Arrow line */}
+                    <line x1="2" y1="10" x2="38" y2="10" stroke="#22d3ee" strokeWidth="2.5" strokeLinecap="round" />
+                    {/* Arrowhead */}
+                    <path d="M34 4 L42 10 L34 16" stroke="#22d3ee" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    {/* Glow circle at start */}
+                    <circle cx="4" cy="10" r="2.5" fill="#22d3ee" opacity="0.4" />
+                  </svg>
+                ) : (
+                  <svg width="48" height="20" viewBox="0 0 48 20" fill="none">
+                    {/* Dashed line to null */}
+                    <line x1="2" y1="10" x2="32" y2="10" stroke="#8b949e" strokeWidth="2" strokeLinecap="round" strokeDasharray="4,4" />
+                    {/* Ground / null symbol */}
+                    <line x1="36" y1="4" x2="36" y2="16" stroke="#8b949e" strokeWidth="2" strokeLinecap="round" />
+                    <line x1="39" y1="6" x2="39" y2="14" stroke="#8b949e" strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="42" y1="8" x2="42" y2="12" stroke="#8b949e" strokeWidth="1" strokeLinecap="round" />
+                  </svg>
+                )}
               </div>
             </React.Fragment>
           );
         })}
 
-        {/* Tail marker */}
+        {/* NULL terminator box */}
         <div style={{
-          display: 'flex', height: 48, width: 56,
+          display: 'flex', flexDirection: 'column', height: 60, width: 64,
           alignItems: 'center', justifyContent: 'center',
-          border: '2px dashed var(--border)', borderRadius: 8,
-          color: 'var(--text-secondary)', fontSize: 11, fontWeight: 700,
-          fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: -16,
-          background: 'rgba(255,255,255,0.01)',
+          border: '2.5px dashed rgba(139,148,158,0.3)', borderRadius: 10,
+          color: '#8b949e', fontSize: 12, fontWeight: 800,
+          fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: -20,
+          background: 'rgba(139,148,158,0.03)',
+          letterSpacing: '0.06em',
+          gap: 4,
         }}>
-          NULL
+          {/* Null symbol */}
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <circle cx="9" cy="9" r="7" stroke="#8b949e" strokeWidth="1.5" opacity="0.5" />
+            <line x1="4" y1="14" x2="14" y2="4" stroke="#8b949e" strokeWidth="1.5" opacity="0.5" />
+          </svg>
+          <span style={{ fontSize: 10 }}>NULL</span>
         </div>
+      </div>
+
+      {/* Node count info bar */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '0 12px 4px',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          {/* Chain icon */}
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <circle cx="4" cy="7" r="2.5" stroke="#22d3ee" strokeWidth="1.2" />
+            <circle cx="10" cy="7" r="2.5" stroke="#22d3ee" strokeWidth="1.2" />
+            <line x1="6.5" y1="7" x2="7.5" y2="7" stroke="#22d3ee" strokeWidth="1.2" />
+          </svg>
+          <span style={{
+            fontSize: 10, fontFamily: 'var(--font-mono)',
+            color: 'var(--text-tertiary)',
+          }}>
+            {nodeCount} node{nodeCount !== 1 ? 's' : ''} linked
+          </span>
+        </div>
+
+        <div style={{ flex: 1, height: 1, background: 'var(--border)', opacity: 0.4 }} />
+
+        <span style={{
+          fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+        }}>
+          {nodes[0]?.id ?? '—'} → … → NULL
+        </span>
       </div>
     </div>
   );
@@ -418,82 +548,198 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
 
 function StackVisual({ data }: { data: StackQueueData }) {
   const total = data.elements.length;
+  const MAX_DISPLAY = 12;
 
   return (
     <div>
       <SectionLabel>
         {data.name}
         <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
-          stack · {total} elements
+          stack · {total} element{total !== 1 ? 's' : ''}
         </span>
       </SectionLabel>
 
       <div style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '20px 0',
+        display: 'flex', alignItems: 'flex-end', gap: 24,
+        padding: '24px 16px 16px',
       }}>
-        {/* Stack vertical bucket */}
+        {/* ── Push/Pop direction indicator ── */}
         <div style={{
-          display: 'flex', flexDirection: 'column-reverse', gap: 6,
-          width: 140, minHeight: 180,
-          padding: '8px 8px 12px',
-          borderLeft: '3px solid var(--accent-violet)',
-          borderRight: '3px solid var(--accent-violet)',
-          borderBottom: '3px solid var(--accent-violet)',
-          borderRadius: '0 0 12px 12px',
-          background: 'linear-gradient(180deg, transparent, rgba(168,85,247,0.02))',
-          boxShadow: '0 8px 24px rgba(168,85,247,0.02)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+          width: 44, flexShrink: 0,
         }}>
-          {data.elements.length === 0 ? (
-            <div style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)',
-            }}>
-              stack is empty
-            </div>
-          ) : (
-            data.elements.map((el, idx) => {
-              const isTop = idx === total - 1;
-              return (
-                <div key={idx} style={{
-                  height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isTop ? 'rgba(168,85,247,0.14)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isTop ? '#a855f7' : 'var(--border)'}`,
-                  borderRadius: 6, position: 'relative',
-                  transition: 'all 0.25s ease',
-                  boxShadow: isTop ? '0 0 10px rgba(168,85,247,0.1)' : 'none',
-                }}>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 12.5,
-                    fontWeight: isTop ? 600 : 400,
-                    color: isTop ? '#e9d5ff' : 'var(--text-primary)',
-                  }}>
-                    {typeof el === 'object' ? JSON.stringify(el) : String(el)}
-                  </span>
-                  
-                  {isTop && (
-                    <span style={{
-                      position: 'absolute', right: -56,
-                      fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                      background: 'rgba(168,85,247,0.15)', color: '#c084fc',
-                      border: '1px solid rgba(168,85,247,0.3)',
-                      padding: '1px 5px', borderRadius: 4,
-                      display: 'flex', alignItems: 'center', gap: 2,
-                    }}>
-                      ← TOP
-                    </span>
-                  )}
+          {/* PUSH arrow (down into stack) */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+          }}>
+            <span style={{
+              fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              color: '#34d399', letterSpacing: '0.05em',
+            }}>PUSH</span>
+            <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
+              <path d="M8 0 L8 18 M3 14 L8 20 L13 14" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
 
-                  <span style={{
-                    position: 'absolute', left: 8,
-                    fontSize: 8.5, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+          {/* Divider */}
+          <div style={{
+            width: 1, height: 12, background: 'var(--border)',
+          }} />
+
+          {/* POP arrow (up out of stack) */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+          }}>
+            <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
+              <path d="M8 24 L8 6 M3 10 L8 4 L13 10" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{
+              fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              color: '#f97316', letterSpacing: '0.05em',
+            }}>POP</span>
+          </div>
+        </div>
+
+        {/* ── Stack bucket ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* Stack opening bracket top */}
+          <div style={{
+            width: 200, height: 4,
+            borderLeft: '3px solid var(--accent-violet)',
+            borderRight: '3px solid var(--accent-violet)',
+            opacity: 0.4,
+          }} />
+
+          {/* Stack body */}
+          <div style={{
+            display: 'flex', flexDirection: 'column-reverse', gap: 4,
+            width: 200, minHeight: 220,
+            padding: '6px 6px 10px',
+            borderLeft: '3px solid var(--accent-violet)',
+            borderRight: '3px solid var(--accent-violet)',
+            borderBottom: '3px solid var(--accent-violet)',
+            borderRadius: '0 0 14px 14px',
+            background: 'linear-gradient(180deg, rgba(168,85,247,0.01) 0%, rgba(168,85,247,0.05) 100%)',
+            boxShadow: '0 12px 40px rgba(168,85,247,0.06), inset 0 -20px 40px rgba(168,85,247,0.02)',
+            position: 'relative',
+          }}>
+            {data.elements.length === 0 ? (
+              <div style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 10,
+              }}>
+                {/* Empty stack icon */}
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" opacity="0.3">
+                  <rect x="6" y="20" width="20" height="4" rx="1" stroke="#a855f7" strokeWidth="1.5" strokeDasharray="3 3" />
+                  <rect x="6" y="14" width="20" height="4" rx="1" stroke="#a855f7" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
+                  <rect x="6" y="8" width="20" height="4" rx="1" stroke="#a855f7" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.25" />
+                </svg>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: 11,
+                  color: 'var(--text-tertiary)', fontStyle: 'italic',
+                }}>
+                  empty
+                </span>
+              </div>
+            ) : (
+              data.elements.slice(0, MAX_DISPLAY).map((el, idx) => {
+                const isTop = idx === total - 1;
+                const depth = total - 1 - idx;
+                const fillOpacity = Math.max(0.03, 0.14 - depth * 0.015);
+
+                return (
+                  <div key={idx} style={{
+                    height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isTop
+                      ? `linear-gradient(135deg, rgba(168,85,247,${fillOpacity + 0.08}), rgba(139,92,246,${fillOpacity + 0.04}))`
+                      : `rgba(168,85,247,${fillOpacity})`,
+                    border: `1.5px solid ${isTop ? '#a855f7' : 'rgba(168,85,247,0.2)'}`,
+                    borderRadius: 8, position: 'relative',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: isTop
+                      ? '0 0 16px rgba(168,85,247,0.15), 0 0 4px rgba(168,85,247,0.1)'
+                      : 'none',
                   }}>
-                    [{idx}]
-                  </span>
-                </div>
-              );
-            })
-          )}
+                    {/* Index badge */}
+                    <span style={{
+                      position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                      fontSize: 9, fontFamily: 'var(--font-mono)',
+                      color: isTop ? 'rgba(192,132,252,0.7)' : 'var(--text-tertiary)',
+                      fontWeight: 500,
+                    }}>
+                      {idx}
+                    </span>
+
+                    {/* Value */}
+                    <span style={{
+                      fontFamily: 'var(--font-mono)', fontSize: 14,
+                      fontWeight: isTop ? 700 : 500,
+                      color: isTop ? '#f0e6ff' : 'var(--text-primary)',
+                      letterSpacing: isTop ? '0.01em' : undefined,
+                    }}>
+                      {typeof el === 'object' ? JSON.stringify(el) : String(el)}
+                    </span>
+
+                    {/* TOP pointer arrow */}
+                    {isTop && (
+                      <div style={{
+                        position: 'absolute', right: -72,
+                        display: 'flex', alignItems: 'center', gap: 4,
+                      }}>
+                        <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+                          <path d="M0 5 H12 M8 1 L13 5 L8 9" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span style={{
+                          fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                          color: '#c084fc',
+                          background: 'rgba(168,85,247,0.12)',
+                          border: '1.5px solid rgba(168,85,247,0.3)',
+                          padding: '2px 8px', borderRadius: 5,
+                          boxShadow: '0 0 10px rgba(168,85,247,0.08)',
+                          letterSpacing: '0.04em',
+                        }}>TOP</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+            {total > MAX_DISPLAY && (
+              <div style={{
+                textAlign: 'center', fontSize: 10, color: 'var(--text-tertiary)',
+                fontFamily: 'var(--font-mono)', padding: '2px 0',
+              }}>
+                +{total - MAX_DISPLAY} more…
+              </div>
+            )}
+          </div>
+
+          {/* Capacity bar */}
+          <div style={{
+            width: 200, marginTop: 10,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <div style={{
+              flex: 1, height: 4, borderRadius: 2,
+              background: 'rgba(168,85,247,0.1)',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%', borderRadius: 2,
+                width: `${Math.min(100, (total / MAX_DISPLAY) * 100)}%`,
+                background: total > MAX_DISPLAY * 0.8
+                  ? 'linear-gradient(90deg, #a855f7, #f43f5e)'
+                  : 'linear-gradient(90deg, #a855f7, #c084fc)',
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+            <span style={{
+              fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+              flexShrink: 0,
+            }}>
+              {total}/{MAX_DISPLAY}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -508,103 +754,240 @@ function QueueVisual({ data }: { data: StackQueueData }) {
       <SectionLabel>
         {data.name}
         <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
-          queue · {total} elements
+          queue · {total} element{total !== 1 ? 's' : ''}
         </span>
       </SectionLabel>
 
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        padding: '24px 0',
+        padding: '32px 8px 20px',
       }}>
-        {/* Queue horizontal tube */}
+        {/* Flow direction banner */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          width: '100%', maxWidth: 440, minHeight: 64,
-          padding: '8px 16px',
-          borderTop: '2.5px solid var(--accent-cyan)',
-          borderBottom: '2.5px solid var(--accent-cyan)',
-          background: 'linear-gradient(90deg, rgba(34,211,238,0.01), rgba(34,211,238,0.03), rgba(34,211,238,0.01))',
-          position: 'relative', overflowX: 'auto',
+          display: 'flex', alignItems: 'center', gap: 8,
+          marginBottom: 14, width: '100%', maxWidth: 520,
+          justifyContent: 'space-between',
         }}>
-          {/* In / Out Flow indicators */}
+          {/* Dequeue / OUT label */}
           <div style={{
-            position: 'absolute', left: 4, top: -18,
-            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#22d3ee', fontWeight: 600,
+            display: 'flex', alignItems: 'center', gap: 5,
           }}>
-            OUT (Front)
-          </div>
-          <div style={{
-            position: 'absolute', right: 4, top: -18,
-            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#22d3ee', fontWeight: 600,
-          }}>
-            IN (Rear)
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+              <path d="M16 6 H4 M8 2 L3 6 L8 10" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{
+              fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              color: '#22d3ee', letterSpacing: '0.06em',
+            }}>DEQUEUE</span>
           </div>
 
-          {data.elements.length === 0 ? (
+          {/* Flow dots */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 4, flex: 1,
+            justifyContent: 'center',
+          }}>
+            {[0.2, 0.35, 0.5, 0.65, 0.5, 0.35, 0.2].map((o, i) => (
+              <div key={i} style={{
+                width: 3, height: 3, borderRadius: '50%',
+                background: `rgba(34,211,238,${o})`,
+              }} />
+            ))}
+          </div>
+
+          {/* Enqueue / IN label */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+          }}>
+            <span style={{
+              fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              color: '#a855f7', letterSpacing: '0.06em',
+            }}>ENQUEUE</span>
+            <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+              <path d="M2 6 H14 M10 2 L15 6 L10 10" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Queue pipe container */}
+        <div style={{
+          position: 'relative',
+          width: '100%', maxWidth: 520,
+        }}>
+          {/* Left gate (OUT) */}
+          <div style={{
+            position: 'absolute', left: -6, top: 0, bottom: 0,
+            width: 6, zIndex: 2,
+            background: 'linear-gradient(180deg, #22d3ee, rgba(34,211,238,0.3))',
+            borderRadius: '4px 0 0 4px',
+            boxShadow: '0 0 12px rgba(34,211,238,0.15)',
+          }} />
+
+          {/* Right gate (IN) */}
+          <div style={{
+            position: 'absolute', right: -6, top: 0, bottom: 0,
+            width: 6, zIndex: 2,
+            background: 'linear-gradient(180deg, #a855f7, rgba(168,85,247,0.3))',
+            borderRadius: '0 4px 4px 0',
+            boxShadow: '0 0 12px rgba(168,85,247,0.15)',
+          }} />
+
+          {/* Queue body */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 0,
+            width: '100%', minHeight: 76,
+            padding: '10px 18px',
+            borderTop: '2.5px solid rgba(34,211,238,0.4)',
+            borderBottom: '2.5px solid rgba(34,211,238,0.4)',
+            background: 'linear-gradient(90deg, rgba(34,211,238,0.04), rgba(168,85,247,0.02) 50%, rgba(168,85,247,0.04))',
+            position: 'relative',
+            overflowX: 'auto',
+          }}>
+            {/* Conveyor track lines */}
             <div style={{
-              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)',
-            }}>
-              queue is empty
-            </div>
-          ) : (
-            data.elements.map((el, idx) => {
-              const isFront = idx === 0;
-              const isRear = idx === total - 1;
-              const isSpecial = isFront || isRear;
-              
-              const borderCol = isFront ? '#22d3ee' : (isRear ? '#a855f7' : 'var(--border)');
-              const bgCol = isFront ? 'rgba(34,211,238,0.1)' : (isRear ? 'rgba(168,85,247,0.1)' : 'rgba(255,255,255,0.03)');
+              position: 'absolute', left: 0, right: 0, top: '50%',
+              height: 1, opacity: 0.06,
+              background: 'repeating-linear-gradient(90deg, #22d3ee 0px, #22d3ee 8px, transparent 8px, transparent 16px)',
+            }} />
 
-              return (
-                <div key={idx} style={{
-                  height: 38, width: 68, display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'center',
-                  background: bgCol,
-                  border: `1.5px solid ${borderCol}`,
-                  borderRadius: 6, position: 'relative', flexShrink: 0,
-                  transition: 'all 0.25s ease',
-                  boxShadow: isSpecial ? `0 0 8px ${borderCol}22` : 'none',
+            {data.elements.length === 0 ? (
+              <div style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '10px 0',
+              }}>
+                <svg width="36" height="20" viewBox="0 0 36 20" fill="none" opacity="0.3">
+                  <rect x="2" y="4" width="12" height="12" rx="2" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="3 3" />
+                  <path d="M17 10 H22 M20 7 L23 10 L20 13" stroke="#22d3ee" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+                  <rect x="22" y="4" width="12" height="12" rx="2" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
+                </svg>
+                <span style={{
+                  fontFamily: 'var(--font-mono)', fontSize: 11,
+                  color: 'var(--text-tertiary)', fontStyle: 'italic',
                 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-mono)', fontSize: 12.5,
-                    fontWeight: isSpecial ? 600 : 400,
-                    color: 'var(--text-primary)',
-                  }}>
-                    {typeof el === 'object' ? JSON.stringify(el) : String(el)}
-                  </span>
-                  
-                  {/* Labels above/below element */}
-                  <div style={{
-                    position: 'absolute', bottom: -18,
-                    display: 'flex', gap: 3,
-                  }}>
-                    {isFront && (
-                      <span style={{
-                        fontSize: 8, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                        color: '#22d3ee', background: 'rgba(34,211,238,0.12)',
-                        padding: '0 4px', borderRadius: 3, border: '1px solid rgba(34,211,238,0.2)',
-                      }}>FRONT</span>
-                    )}
-                    {isRear && (
-                      <span style={{
-                        fontSize: 8, fontFamily: 'var(--font-mono)', fontWeight: 700,
-                        color: '#c084fc', background: 'rgba(168,85,247,0.12)',
-                        padding: '0 4px', borderRadius: 3, border: '1px solid rgba(168,85,247,0.2)',
-                      }}>REAR</span>
-                    )}
-                  </div>
+                  empty
+                </span>
+              </div>
+            ) : (
+              data.elements.map((el, idx) => {
+                const isFront = idx === 0;
+                const isRear = idx === total - 1;
+                const isSpecial = isFront || isRear;
 
-                  <span style={{
-                    position: 'absolute', top: 2, left: 4,
-                    fontSize: 7.5, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
-                  }}>
-                    {idx}
-                  </span>
-                </div>
-              );
-            })
-          )}
+                const borderCol = isFront ? '#22d3ee' : (isRear ? '#a855f7' : 'rgba(255,255,255,0.1)');
+                const bgCol = isFront
+                  ? 'linear-gradient(135deg, rgba(34,211,238,0.14), rgba(34,211,238,0.06))'
+                  : isRear
+                    ? 'linear-gradient(135deg, rgba(168,85,247,0.14), rgba(168,85,247,0.06))'
+                    : 'rgba(255,255,255,0.03)';
+
+                return (
+                  <React.Fragment key={idx}>
+                    {/* Element cell */}
+                    <div style={{
+                      height: 48, minWidth: 72, display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center',
+                      background: bgCol,
+                      border: `2px solid ${borderCol}`,
+                      borderRadius: 8, position: 'relative', flexShrink: 0,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: isSpecial ? `0 0 14px ${isFront ? 'rgba(34,211,238,0.12)' : 'rgba(168,85,247,0.12)'}` : 'none',
+                      padding: '0 10px',
+                      zIndex: 1,
+                    }}>
+                      {/* Value */}
+                      <span style={{
+                        fontFamily: 'var(--font-mono)', fontSize: 14,
+                        fontWeight: isSpecial ? 700 : 500,
+                        color: isFront ? '#a5f3fc' : isRear ? '#e9d5ff' : 'var(--text-primary)',
+                      }}>
+                        {typeof el === 'object' ? JSON.stringify(el) : String(el)}
+                      </span>
+
+                      {/* Index */}
+                      <span style={{
+                        position: 'absolute', top: 3, left: 5,
+                        fontSize: 8, fontFamily: 'var(--font-mono)',
+                        color: isFront ? 'rgba(34,211,238,0.4)' : isRear ? 'rgba(168,85,247,0.4)' : 'var(--text-tertiary)',
+                      }}>
+                        {idx}
+                      </span>
+
+                      {/* FRONT / REAR label below */}
+                      {isSpecial && (
+                        <div style={{
+                          position: 'absolute', bottom: -22,
+                          display: 'flex', gap: 3,
+                        }}>
+                          {isFront && (
+                            <span style={{
+                              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                              color: '#22d3ee', background: 'rgba(34,211,238,0.1)',
+                              padding: '1px 7px', borderRadius: 4,
+                              border: '1.5px solid rgba(34,211,238,0.25)',
+                              letterSpacing: '0.04em',
+                            }}>FRONT</span>
+                          )}
+                          {isRear && (
+                            <span style={{
+                              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                              color: '#c084fc', background: 'rgba(168,85,247,0.1)',
+                              padding: '1px 7px', borderRadius: 4,
+                              border: '1.5px solid rgba(168,85,247,0.25)',
+                              letterSpacing: '0.04em',
+                            }}>REAR</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Flow chevron between elements */}
+                    {idx < total - 1 && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        width: 24, flexShrink: 0,
+                      }}>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M3 2 L8 6 L3 10" stroke="rgba(34,211,238,0.25)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Element count bar */}
+        <div style={{
+          width: '100%', maxWidth: 520, marginTop: 28,
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{
+            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#22d3ee', flexShrink: 0,
+          }}>OUT</span>
+          <div style={{
+            flex: 1, height: 3, borderRadius: 2,
+            background: 'rgba(34,211,238,0.08)',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              height: '100%', borderRadius: 2,
+              width: total > 0 ? '100%' : '0%',
+              background: 'linear-gradient(90deg, #22d3ee, #a855f7)',
+              transition: 'width 0.4s ease',
+              opacity: 0.35,
+            }} />
+          </div>
+          <span style={{
+            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#a855f7', flexShrink: 0,
+          }}>IN</span>
+          <span style={{
+            fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+            marginLeft: 4, flexShrink: 0,
+          }}>
+            {total} item{total !== 1 ? 's' : ''}
+          </span>
         </div>
       </div>
     </div>

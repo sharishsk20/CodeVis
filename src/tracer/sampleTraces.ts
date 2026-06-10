@@ -608,8 +608,9 @@ while queue:
 
 export const CPP_PRESETS: Preset[] = [
   {
-    label: 'Linked List',
-    code:  CPP_CODE,
+    label:       'Linked List',
+    code:        CPP_CODE,
+    sampleTrace: CPP_SAMPLE.steps,
   },
   {
     label: 'Hello World',

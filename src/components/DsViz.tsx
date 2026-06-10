@@ -274,7 +274,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
       <SectionLabel>linked list state</SectionLabel>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 0,
-        overflowX: 'auto', padding: '16px 8px 24px',
+        overflowX: 'auto', padding: '28px 8px 24px',
         scrollBehavior: 'smooth',
       }}>
         {nodes.map((node, idx) => {
@@ -288,75 +288,77 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
               }}>
                 {/* Pointer variables list above node */}
                 <div style={{
-                  position: 'absolute', top: -22,
-                  display: 'flex', gap: 4, height: 16,
+                  position: 'absolute', top: -26,
+                  display: 'flex', gap: 4, height: 20,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   {node.labels.map(lbl => (
                     <span key={lbl} style={{
-                      fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                      fontSize: 10.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
                       background: lbl === 'head' ? 'rgba(29,158,117,0.15)' : 'rgba(56,189,248,0.15)',
                       color: lbl === 'head' ? '#2dd4a8' : '#38bdf8',
-                      border: `1px solid ${lbl === 'head' ? 'rgba(29,158,117,0.3)' : 'rgba(56,189,248,0.3)'}`,
-                      padding: '1px 5px', borderRadius: 4,
+                      border: `1.5px solid ${lbl === 'head' ? 'rgba(29,158,117,0.45)' : 'rgba(56,189,248,0.45)'}`,
+                      padding: '2px 7px', borderRadius: 5,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                     }}>{lbl}</span>
                   ))}
                 </div>
 
                 {/* Node Box */}
                 <div style={{
-                  display: 'flex', height: 38, minWidth: 76,
+                  display: 'flex', height: 48, minWidth: 100,
                   background: 'var(--bg-surface)',
-                  border: `1.5px solid ${hasPointers ? '#22d3ee' : 'var(--border)'}`,
-                  borderRadius: 6, overflow: 'hidden',
-                  boxShadow: hasPointers ? '0 0 12px rgba(34,211,238,0.15)' : 'none',
+                  border: `2px solid ${hasPointers ? '#22d3ee' : 'var(--border)'}`,
+                  borderRadius: 8, overflow: 'hidden',
+                  boxShadow: hasPointers ? '0 0 16px rgba(34,211,238,0.25)' : 'none',
                   transition: 'all 0.25s ease',
                 }}>
                   {/* Left part: Val */}
                   <div style={{
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '0 10px', fontSize: 13, fontFamily: 'var(--font-mono)',
-                    fontWeight: 600, color: 'var(--text-primary)',
-                    borderRight: '1px solid var(--border)',
+                    padding: '0 12px', fontSize: 16, fontFamily: 'var(--font-mono)',
+                    fontWeight: 700, color: 'var(--text-primary)',
+                    borderRight: '2px solid var(--border)',
                   }}>
                     {node.val}
                   </div>
                   {/* Right part: Pointer */}
                   <div style={{
-                    width: 26, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: 'rgba(255,255,255,0.02)', position: 'relative',
+                    width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(255,255,255,0.015)', position: 'relative',
                   }}>
                     <div style={{
-                      width: 5, height: 5, borderRadius: '50%',
+                      width: 7, height: 7, borderRadius: '50%',
                       background: node.nextId ? '#22d3ee' : '#484f58',
                     }} />
                   </div>
                 </div>
 
-                {/* Address label below node */}
+                {/* Address label below node - big and readable */}
                 <span style={{
-                  fontSize: 8, fontFamily: 'var(--font-mono)',
-                  color: 'var(--text-tertiary)', marginTop: 4,
+                  fontSize: 11.5, fontFamily: 'var(--font-mono)', fontWeight: 600,
+                  color: '#58a6ff', marginTop: 6,
+                  textShadow: '0 0 1px rgba(88,166,255,0.2)',
                 }}>{node.id}</span>
               </div>
 
               {/* Arrow Connector */}
               <div style={{
                 display: 'flex', alignItems: 'center',
-                width: 32, justifyContent: 'center',
-                flexShrink: 0, marginTop: -12,
+                width: 40, justifyContent: 'center',
+                flexShrink: 0, marginTop: -16,
               }}>
-                <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
+                <svg width="32" height="16" viewBox="0 0 32 16" fill="none">
                   <path
-                    d={node.nextId ? "M0 6 H20 M16 2 L21 6 L16 10" : "M0 6 H16 M14 2 L8 10"}
-                    stroke={node.nextId ? "#22d3ee" : "#484f58"}
-                    strokeWidth="1.5"
+                    d={node.nextId ? "M0 8 H28 M22 3 L29 8 L22 13" : "M0 8 H22 M18 3 L10 13"}
+                    stroke={node.nextId ? "#22d3ee" : "#8b949e"}
+                    strokeWidth="2.2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeDasharray={node.nextId ? undefined : "2,2"}
+                    strokeDasharray={node.nextId ? undefined : "3,3"}
                   />
                   {!node.nextId && (
-                    <text x="14" y="11" fontSize="5" fontFamily="monospace" fill="#484f58" fontWeight="bold">X</text>
+                    <text x="17" y="14" fontSize="7" fontFamily="monospace" fill="#8b949e" fontWeight="bold">X</text>
                   )}
                 </svg>
               </div>
@@ -366,11 +368,12 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
 
         {/* Tail marker */}
         <div style={{
-          display: 'flex', height: 38, width: 44,
+          display: 'flex', height: 48, width: 56,
           alignItems: 'center', justifyContent: 'center',
-          border: '1.5px dashed var(--border)', borderRadius: 6,
-          color: 'var(--text-tertiary)', fontSize: 10,
-          fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: -12,
+          border: '2px dashed var(--border)', borderRadius: 8,
+          color: 'var(--text-secondary)', fontSize: 11, fontWeight: 700,
+          fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: -16,
+          background: 'rgba(255,255,255,0.01)',
         }}>
           NULL
         </div>

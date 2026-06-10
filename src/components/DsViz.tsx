@@ -52,20 +52,95 @@ function collectObjects(val: any, visited = new Set<string>(), objects: Map<stri
 function detectLinkedList(frame: StackFrame): LinkedListNode[] | null {
   const locals = frame.locals;
   
-  // 1. Collect all Node objects referenced in locals
-  const objects = new Map<string, any>();
+  // 1. Collect all custom objects referenced in locals
+  const allObjects = new Map<string, any>();
   const visited = new Set<string>();
   for (const v of Object.values(locals)) {
-    collectObjects(v, visited, objects);
+    collectObjects(v, visited, allObjects);
   }
 
-  if (objects.size === 0) return null;
+  if (allObjects.size === 0) return null;
 
-  // 2. Locate pointers (local variable name -> node id)
-  const ptrs = new Map<string, string>(); // varName -> nodeId
+  // 2. Identify actual list Nodes vs container/helper objects
+  // A Node is an object that has a key like next/nxt/next_node, or its class name contains 'Node'
+  const isNode = (obj: any): boolean => {
+    if (!obj || typeof obj !== 'object') return false;
+    if (obj.__class__ && /Node/i.test(obj.__class__)) return true;
+    return ('next' in obj) || ('nxt' in obj) || ('next_node' in obj);
+  };
+
+  const nodeObjects = new Map<string, any>();
+  const containers = new Map<string, any>();
+
+  for (const [id, obj] of allObjects.entries()) {
+    if (isNode(obj)) {
+      nodeObjects.set(id, obj);
+    } else {
+      containers.set(id, obj);
+    }
+  }
+
+  if (nodeObjects.size === 0) return null;
+
+  // Helper to extract next ID from a node
+  const getNextId = (node: any): string | null => {
+    const nxt = node.next !== undefined ? node.next : (node.next_node !== undefined ? node.next_node : node.nxt);
+    if (!nxt) return null;
+    if (typeof nxt === 'string') return nxt === 'NULL' ? null : nxt;
+    if (typeof nxt === 'object' && nxt.__id__) return nxt.__id__;
+    return null;
+  };
+
+  // 3. Locate pointers (variable/property path -> node id)
+  const ptrs = new Map<string, string>(); // pathLabel -> nodeId
+
   for (const [k, v] of Object.entries(locals)) {
-    if (v && typeof v === 'object' && (v as any).__id__) {
-      ptrs.set(k, (v as any).__id__);
+    if (!v || typeof v !== 'object') continue;
+    
+    const valObj = v as any;
+    if (valObj.__id__) {
+      const id = valObj.__id__;
+      if (nodeObjects.has(id)) {
+        ptrs.set(k, id);
+      } else if (containers.has(id)) {
+        // It's a container! Check if it has a head/root/first pointer to a Node
+        const headVal = valObj.head !== undefined ? valObj.head : (valObj.root !== undefined ? valObj.root : valObj.first);
+        if (headVal) {
+          const headId = typeof headVal === 'object' ? headVal.__id__ : (typeof headVal === 'string' && headVal !== 'NULL' ? headVal : null);
+          if (headId && nodeObjects.has(headId)) {
+            ptrs.set(`${k}.head`, headId);
+          }
+        }
+      }
+    }
+  }
+
+  // 4. Find list heads. A node is a head if it has no incoming next pointers from other Node objects.
+  const nodeIds = Array.from(nodeObjects.keys());
+  const incoming = new Set<string>();
+  for (const node of nodeObjects.values()) {
+    const nxtId = getNextId(node);
+    if (nxtId && nodeObjects.has(nxtId)) {
+      incoming.add(nxtId);
+    }
+  }
+
+  let heads = nodeIds.filter(id => !incoming.has(id));
+  
+  // Fallback: if all nodes have incoming (circular list), use pointer references
+  if (heads.length === 0) {
+    heads = Array.from(new Set(ptrs.values()));
+  }
+
+  if (heads.length === 0) return null;
+
+  // 5. Select primary headId. Prefer one pointed to by pointers like 'head', 'll.head', 'root'
+  let headId = heads[0];
+  for (const hId of heads) {
+    const labels = Array.from(ptrs.entries()).filter(([_, id]) => id === hId).map(([lbl]) => lbl);
+    if (labels.some(l => l.includes('head') || l.includes('root') || l.includes('list'))) {
+      headId = hId;
+      break;
     }
   }
 
@@ -77,60 +152,20 @@ function detectLinkedList(frame: StackFrame): LinkedListNode[] | null {
     return String(val);
   };
 
-  // Helper to extract next ID from a node
-  const getNextId = (node: any): string | null => {
-    const nxt = node.next !== undefined ? node.next : (node.next_node !== undefined ? node.next_node : node.nxt);
-    if (!nxt) return null;
-    if (typeof nxt === 'string') {
-      // Could be a string pointer in C++ style or repr
-      return nxt === 'NULL' ? null : nxt;
-    }
-    if (typeof nxt === 'object' && nxt.__id__) {
-      return nxt.__id__;
-    }
-    return null;
-  };
-
-  // 3. Find list heads. A node is a head if it is pointed to by a local variable,
-  // or it has no incoming pointer from any other nodes in our collection.
-  const allIds = Array.from(objects.keys());
-  const incoming = new Set<string>();
-  for (const node of objects.values()) {
-    const nxtId = getNextId(node);
-    if (nxtId) incoming.add(nxtId);
-  }
-
-  let heads = allIds.filter(id => !incoming.has(id));
-  // Fallback: if there are circular lists or we only have a partial set, use local variables
-  if (heads.length === 0) {
-    heads = Array.from(new Set(ptrs.values()));
-  }
-
-  if (heads.length === 0) return null;
-
-  // 4. Build node chain starting from the primary head (prefer variables named 'head', 'root', etc.)
-  let headId = heads[0];
-  for (const hId of heads) {
-    const varNames = Array.from(ptrs.entries()).filter(([_, id]) => id === hId).map(([name]) => name);
-    if (varNames.includes('head') || varNames.includes('root') || varNames.includes('list')) {
-      headId = hId;
-      break;
-    }
-  }
-
+  // 6. Build chain of nodes
   const listNodes: LinkedListNode[] = [];
   const listVisited = new Set<string>();
   let currId: string | null = headId;
 
-  while (currId && objects.has(currId) && !listVisited.has(currId)) {
+  while (currId && nodeObjects.has(currId) && !listVisited.has(currId)) {
     listVisited.add(currId);
-    const rawNode = objects.get(currId);
+    const rawNode = nodeObjects.get(currId);
     const nextId = getNextId(rawNode);
 
-    // Get variable pointers pointing to this node
+    // Collect all pointer labels pointing to this node
     const labels = Array.from(ptrs.entries())
       .filter(([_, id]) => id === currId)
-      .map(([name]) => name);
+      .map(([lbl]) => lbl);
 
     listNodes.push({
       id: currId,
@@ -142,7 +177,6 @@ function detectLinkedList(frame: StackFrame): LinkedListNode[] | null {
     currId = nextId;
   }
 
-  // If we couldn't construct a chain of at least 1 node, return null
   return listNodes.length > 0 ? listNodes : null;
 }
 

@@ -1,6 +1,7 @@
 import type { TraceStep } from '../types/trace';
 import ArrayViz from './ArrayViz';
 import SearchViz, { isSearchStep } from './SearchViz';
+import DsViz, { detectDs } from './DsViz';
 import StackPanel from './StackPanel';
 import HeapDiagram from './HeapDiagram';
 import { SectionLabel } from './ArrayViz';
@@ -165,14 +166,17 @@ export default function VizPane({ step, prevStep }: Props) {
           flex: 1, overflowY: 'auto', padding: 14,
           display: 'flex', flexDirection: 'column', gap: 16,
         }}>
+          {/* Data Structure Visualizer (linked list, stack, queue) */}
+          <DsViz step={step} />
+
           {/* Search cell grid — linear / binary search */}
-          <SearchViz step={step} />
+          {!detectDs(step) && <SearchViz step={step} />}
 
-          {/* Array bars — sorting algorithms (skip when showing search viz) */}
-          {!isSearchStep(step) && <ArrayViz step={step} />}
+          {/* Array bars — sorting algorithms (skip when showing search or DS viz) */}
+          {!isSearchStep(step) && !detectDs(step) && <ArrayViz step={step} />}
 
-          {/* Heap — C++ */}
-          {step.heap && (
+          {/* Heap — C++ (skip when showing custom DS visualizer) */}
+          {step.heap && !detectDs(step) && (
             <HeapDiagram heap={step.heap} headPtr={headPtr} />
           )}
 

@@ -96,6 +96,15 @@ def _snap(val, depth=0):
             return sorted([_snap(v, depth+1) for v in list(val)[:20]], key=str)
         except Exception:
             return [_snap(v, depth+1) for v in list(val)[:20]]
+    if hasattr(val, '__dict__'):
+        res = {
+            '__class__': type(val).__name__,
+            '__id__': f'0x{id(val) & 0xffffff:x}',
+        }
+        for k, v in val.__dict__.items():
+            if not k.startswith('_'):
+                res[k] = _snap(v, depth+1)
+        return res
     return repr(val)
 
 # ── Stack builder ─────────────────────────────────────────────────────────────

@@ -552,6 +552,58 @@ arr = [9, 4, 7, 2, 6]
 result = insertion_sort(arr)
 print(result)`,
   },
+  {
+    label: 'Linked List',
+    code: `class Node:
+    def __init__(self, val):
+        self.val = val
+        self.next = None
+
+# Create: 3 -> 7 -> 12
+head = Node(3)
+node2 = Node(7)
+node3 = Node(12)
+
+head.next = node2
+node2.next = node3
+
+# Traverse linked list
+curr = head
+while curr:
+    print(curr.val)
+    curr = curr.next`,
+  },
+  {
+    label: 'Stack (Parentheses)',
+    code: `def check_brackets(s):
+    stack = []
+    for char in s:
+        if char == '(':
+            stack.append(char)
+        elif char == ')':
+            if not stack:
+                return False
+            stack.pop()
+    return len(stack) == 0
+
+expr = "(()())"
+is_valid = check_brackets(expr)
+print(f"Valid: {is_valid}")`,
+  },
+  {
+    label: 'Queue (Conveyor)',
+    code: `queue = []
+
+# Enqueue print jobs
+queue.append("job_1")
+queue.append("job_2")
+queue.append("job_3")
+
+# Dequeue jobs
+while queue:
+    active_job = queue.pop(0)
+    print(f"Processing: {active_job}")`,
+  },
 ];
 
 export const CPP_PRESETS: Preset[] = [

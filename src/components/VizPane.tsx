@@ -4,6 +4,7 @@ import SearchViz, { isSearchStep } from './SearchViz';
 import StackPanel from './StackPanel';
 import HeapDiagram from './HeapDiagram';
 import { SectionLabel } from './ArrayViz';
+import DsViz, { detectDs } from './DsViz';
 
 interface Props {
   step:     TraceStep | undefined;
@@ -137,9 +138,20 @@ export default function VizPane({ step, prevStep }: Props) {
           flex: 1, overflowY: 'auto', padding: 14,
           display: 'flex', flexDirection: 'column', gap: 18,
         }}>
-          <SearchViz step={step} />
-          {!isSearchStep(step) && <ArrayViz step={step} />}
-          {step.heap && <HeapDiagram heap={step.heap} headPtr={headPtr} />}
+          {/* Data Structure Visualizer (linked list, stack, queue) */}
+          <DsViz step={step} />
+
+          {/* Search cell grid — linear / binary search */}
+          {!detectDs(step) && <SearchViz step={step} />}
+
+          {/* Array bars — sorting algorithms (skip when showing search or DS viz) */}
+          {!isSearchStep(step) && !detectDs(step) && <ArrayViz step={step} />}
+
+          {/* Heap — C++ (skip when showing custom DS visualizer) */}
+          {step.heap && !detectDs(step) && (
+            <HeapDiagram heap={step.heap} headPtr={headPtr} />
+          )}
+
           <StackPanel step={step} prevStep={prevStep} />
           {step.stdout && <TerminalOutput stdout={step.stdout} prevStdout={prevStep?.stdout} />}
           {step.error  && <ExceptionBox error={step.error} />}

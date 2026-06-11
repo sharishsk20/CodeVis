@@ -18,63 +18,57 @@ interface Props {
 
 const SPEEDS = [[0.5, '½×'], [1, '1×'], [2, '2×'], [4, '4×']] as const;
 
-const EVENT_COLORS: Record<string, { bg: string; text: string; glow: string }> = {
-  call:      { bg: 'rgba(56,189,248,0.12)',  text: '#38bdf8', glow: 'none' },
-  return:    { bg: 'rgba(29,158,117,0.12)',  text: '#2dd4a8', glow: 'none' },
-  exception: { bg: 'rgba(244,63,94,0.12)',   text: '#f43f5e', glow: 'none' },
-  step:      { bg: 'rgba(255,255,255,0.05)', text: '#8b949e', glow: 'none' },
+const EV_COLOR: Record<string, string> = {
+  call:      '#38bdf8',
+  return:    '#34d399',
+  exception: '#f43f5e',
+  step:      '#4a4a54',
 };
 
-function TransportBtn({ onClick, disabled, title, children, color }: {
-  onClick: () => void; disabled?: boolean; title?: string;
-  children: React.ReactNode; color?: string;
+const MARKER_COLOR: Record<string, string> = {
+  call:      '#38bdf8',
+  return:    '#34d399',
+  exception: '#f43f5e',
+};
+
+function IconBtn({ onClick, disabled, children, title }: {
+  onClick: () => void; disabled?: boolean; children: React.ReactNode; title?: string;
 }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      style={{
-        background: disabled ? 'transparent' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${disabled ? 'transparent' : 'rgba(255,255,255,0.06)'}`,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        color: disabled ? 'var(--text-tertiary)' : (color || 'var(--text-secondary)'),
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '5px 8px',
-        borderRadius: 8, fontSize: 15,
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        width: 34, height: 34,
-      }}
+    <button onClick={onClick} disabled={disabled} title={title} style={{
+      width: 32, height: 32,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'transparent',
+      border: '1px solid transparent',
+      borderRadius: 'var(--r)',
+      color: disabled ? 'var(--t3)' : 'var(--t2)',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      transition: 'background 0.1s, color 0.1s, border-color 0.1s',
+    }}
       onMouseEnter={(e) => {
         if (!disabled) {
-          (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)';
-          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)';
-          (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)';
+          const el = e.currentTarget as HTMLElement;
+          el.style.background = 'var(--surf)';
+          el.style.borderColor = 'var(--line)';
+          el.style.color = 'var(--t1)';
         }
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = disabled ? 'transparent' : 'rgba(255,255,255,0.04)';
-        (e.currentTarget as HTMLElement).style.borderColor = disabled ? 'transparent' : 'rgba(255,255,255,0.06)';
-        (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+        const el = e.currentTarget as HTMLElement;
+        el.style.background = 'transparent';
+        el.style.borderColor = 'transparent';
+        el.style.color = disabled ? 'var(--t3)' : 'var(--t2)';
       }}
-    >
-      {children}
-    </button>
+    >{children}</button>
   );
 }
-
-const MARKER_COLORS: Record<string, string> = {
-  call:      '#38bdf8',
-  return:    '#2dd4a8',
-  exception: '#f43f5e',
-};
 
 export default function PlaybackBar({
   stepIdx, total, playing, speed, event, note, steps,
   onPrev, onNext, onReset, onTogglePlay, onSpeedChange, onScrub,
 }: Props) {
-  const pct = total > 1 ? (stepIdx / (total - 1)) * 100 : 0;
-  const ev  = EVENT_COLORS[event ?? 'step'] ?? EVENT_COLORS.step;
+  const pct     = total > 1 ? (stepIdx / (total - 1)) * 100 : 0;
+  const evColor = EV_COLOR[event ?? 'step'] ?? EV_COLOR.step;
 
   const markers = steps
     .map((s, i) => ({ i, event: s.event }))
@@ -82,101 +76,106 @@ export default function PlaybackBar({
 
   return (
     <div style={{
-      flexShrink: 0, borderTop: '1px solid var(--glass-border)',
-      background: 'var(--bg-panel)',
-      backdropFilter: 'blur(12px)',
+      flexShrink: 0,
+      borderTop: '1px solid var(--line)',
+      background: 'var(--panel)',
     }}>
+
       {/* ── Progress scrubber ── */}
-      <div style={{
-        position: 'relative', height: 6, cursor: 'pointer',
-        background: 'rgba(255,255,255,0.06)',
-      }}
+      <div
+        style={{ position: 'relative', height: 3, background: 'var(--surf)', cursor: 'pointer' }}
         onClick={(e) => {
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-          const ratio = (e.clientX - rect.left) / rect.width;
-          onScrub(Math.round(ratio * (total - 1)));
+          onScrub(Math.round(((e.clientX - rect.left) / rect.width) * (total - 1)));
         }}
       >
-        {/* Fill */}
         <div style={{
-          position: 'absolute', left: 0, top: 0, bottom: 0,
-          width: `${pct}%`,
-          background: '#1d9e75',
-          transition: 'width 0.15s ease',
-          borderRadius: '0 2px 2px 0',
+          position: 'absolute', inset: '0 auto 0 0',
+          width: `${pct}%`, background: 'var(--violet)',
+          transition: 'width 0.1s linear',
         }} />
-        {/* Event markers */}
         {markers.map((m) => {
           const left = total > 1 ? (m.i / (total - 1)) * 100 : 0;
-          const color = MARKER_COLORS[m.event] ?? '#8b949e';
+          const c = MARKER_COLOR[m.event] ?? 'var(--t3)';
           return (
-            <div key={m.i} title={m.event} style={{
+            <div key={m.i} style={{
               position: 'absolute', top: '50%', transform: 'translateY(-50%)',
               left: `${left}%`, marginLeft: -2,
               width: 4, height: 4, borderRadius: '50%',
-              background: color, opacity: 0.75,
-              pointerEvents: 'none',
+              background: c, opacity: 0.6, pointerEvents: 'none',
             }} />
           );
         })}
-        {/* Scrubber dot */}
         <div style={{
-          position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-          left: `${pct}%`, marginLeft: -5,
-          width: 10, height: 10, borderRadius: '50%',
-          background: '#22d3ee',
-          boxShadow: '0 0 8px rgba(34,211,238,0.6)',
-          transition: 'left 0.15s ease',
-          zIndex: 1,
+          position: 'absolute', top: '50%', transform: 'translate(-50%,-50%)',
+          left: `${pct}%`,
+          width: 9, height: 9, borderRadius: '50%',
+          background: 'var(--violet)',
+          boxShadow: '0 0 0 2px var(--panel), 0 0 0 3px rgba(124,106,247,0.5)',
+          transition: 'left 0.1s linear',
+          zIndex: 1, pointerEvents: 'none',
         }} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 18px' }}>
-        {/* Transport buttons */}
-        <TransportBtn onClick={onReset} title="Reset to start (R)" color="#ef9f27">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="4" height="16"/><polygon points="20,4 10,12 20,20"/></svg>
-        </TransportBtn>
-        <TransportBtn onClick={onPrev} disabled={stepIdx === 0} title="Previous step (←)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19,4 9,12 19,20"/><rect x="5" y="4" width="3" height="16"/></svg>
-        </TransportBtn>
+      {/* ── Controls ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 14px' }}>
 
-        {/* Play / Pause — hero button */}
-        <button onClick={onTogglePlay} className="btn-modern" style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          padding: '7px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 13,
-          minWidth: 90, justifyContent: 'center', fontWeight: 600,
-          background: playing ? 'rgba(239,159,39,0.14)' : 'rgba(29,158,117,0.14)',
-          border: `1px solid ${playing ? 'rgba(239,159,39,0.35)' : 'rgba(29,158,117,0.35)'}`,
-          color: playing ? '#ef9f27' : '#2dd4a8',
-          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        {/* Transport */}
+        <IconBtn onClick={onReset} title="Reset (R)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="4" width="3.5" height="16"/><polygon points="20,4 10,12 20,20"/>
+          </svg>
+        </IconBtn>
+        <IconBtn onClick={onPrev} disabled={stepIdx === 0} title="Prev (←)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="19,4 9,12 19,20"/><rect x="5" y="4" width="3.5" height="16"/>
+          </svg>
+        </IconBtn>
+
+        {/* Play / Pause */}
+        <button onClick={onTogglePlay} style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 16px', borderRadius: 'var(--r)',
+          background: playing ? 'rgba(245,158,11,0.1)' : 'rgba(52,211,153,0.1)',
+          border: `1px solid ${playing ? 'rgba(245,158,11,0.25)' : 'rgba(52,211,153,0.25)'}`,
+          color: playing ? 'var(--amber)' : 'var(--green)',
+          fontSize: 12, fontWeight: 600,
+          minWidth: 80, justifyContent: 'center',
+          transition: 'all 0.12s ease',
+          cursor: 'pointer',
         }}>
           {playing ? (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
           ) : (
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,3 19,12 5,21"/>
+            </svg>
           )}
-          <span style={{ fontSize: 12 }}>{playing ? 'Pause' : 'Play'}</span>
+          {playing ? 'Pause' : 'Play'}
         </button>
 
-        <TransportBtn onClick={onNext} disabled={stepIdx >= total - 1} title="Next step (→)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><rect x="16" y="4" width="3" height="16"/></svg>
-        </TransportBtn>
+        <IconBtn onClick={onNext} disabled={stepIdx >= total - 1} title="Next (→)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,4 15,12 5,20"/><rect x="16.5" y="4" width="3.5" height="16"/>
+          </svg>
+        </IconBtn>
 
-        {/* Step note */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginLeft: 8, minWidth: 0, overflow: 'hidden' }}>
-          {event && (
+        {/* Event badge + note */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 6, minWidth: 0, overflow: 'hidden' }}>
+          {event && event !== 'step' && (
             <span style={{
-              fontSize: 10, padding: '3px 10px', borderRadius: 6, fontWeight: 600,
-              background: ev.bg, color: ev.text, boxShadow: ev.glow,
-              fontFamily: 'var(--font-mono)', flexShrink: 0,
-              border: `1px solid ${ev.text}22`,
-              letterSpacing: '0.04em', textTransform: 'uppercase',
+              fontSize: 9.5, padding: '2px 7px', borderRadius: 'var(--r-sm)',
+              background: `${evColor}15`, color: evColor,
+              border: `1px solid ${evColor}28`,
+              fontFamily: 'var(--mono)', fontWeight: 600,
+              letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0,
             }}>{event}</span>
           )}
           {note && (
             <span style={{
-              fontSize: 12, color: 'var(--text-secondary)',
-              fontFamily: 'var(--font-mono)',
+              fontSize: 11.5, color: 'var(--t2)', fontFamily: 'var(--mono)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>{note}</span>
           )}
@@ -184,33 +183,29 @@ export default function PlaybackBar({
 
         <div style={{ flex: 1 }} />
 
-        {/* Speed picker */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{
-            fontSize: 9, color: 'var(--text-tertiary)', letterSpacing: '0.1em',
-            fontWeight: 600, fontFamily: 'var(--font-mono)',
-          }}>SPEED</span>
+        {/* Speed */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {SPEEDS.map(([s, label]) => (
             <button key={s} onClick={() => onSpeedChange(s)} style={{
-              padding: '3px 9px', borderRadius: 6, fontSize: 11,
-              cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: 600,
-              background: speed === s ? 'rgba(56,189,248,0.14)' : 'rgba(255,255,255,0.03)',
-              border: `1px solid ${speed === s ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.06)'}`,
-              color: speed === s ? '#38bdf8' : 'var(--text-tertiary)',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              padding: '3px 8px', borderRadius: 'var(--r-sm)',
+              border: `1px solid ${speed === s ? 'rgba(124,106,247,0.35)' : 'transparent'}`,
+              background: speed === s ? 'rgba(124,106,247,0.1)' : 'transparent',
+              color: speed === s ? 'var(--violet)' : 'var(--t3)',
+              fontSize: 10.5, fontWeight: 600, fontFamily: 'var(--mono)',
+              cursor: 'pointer', transition: 'all 0.1s',
             }}>{label}</button>
           ))}
         </div>
 
         {/* Step counter */}
         <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: 11, marginLeft: 6, flexShrink: 0,
-          background: 'rgba(255,255,255,0.03)', padding: '4px 10px', borderRadius: 6,
-          border: '1px solid rgba(255,255,255,0.06)',
+          fontFamily: 'var(--mono)', fontSize: 11, marginLeft: 8,
+          color: 'var(--t3)',
+          display: 'flex', alignItems: 'center', gap: 2,
         }}>
-          <span style={{ fontWeight: 700, color: '#22d3ee' }}>{stepIdx + 1}</span>
-          <span style={{ color: 'var(--text-tertiary)', margin: '0 2px' }}>/</span>
-          <span style={{ color: 'var(--text-tertiary)' }}>{total}</span>
+          <span style={{ color: 'var(--cyan)', fontWeight: 600 }}>{stepIdx + 1}</span>
+          <span>/</span>
+          <span>{total}</span>
         </div>
       </div>
     </div>

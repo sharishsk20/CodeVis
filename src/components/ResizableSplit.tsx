@@ -63,33 +63,12 @@ export default function ResizableSplit({
       <div
         onPointerDown={handlePointerDown}
         style={{
-          width: 6,
-          cursor: 'col-resize',
-          background: dragging
-            ? '#a855f7'
-            : 'var(--border)',
-          transition: dragging ? 'none' : 'background 0.2s ease',
-          position: 'relative',
-          flexShrink: 0,
-          zIndex: 10,
+          width: 5, cursor: 'col-resize',
+          background: dragging ? 'rgba(124,106,247,0.6)' : 'var(--line)',
+          transition: dragging ? 'none' : 'background 0.15s ease',
+          flexShrink: 0, zIndex: 10,
         }}
-      >
-        {/* Visual grip dots */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          display: 'flex', flexDirection: 'column', gap: 3,
-          opacity: dragging ? 1 : 0.4,
-          transition: 'opacity 0.2s ease',
-        }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              width: 3, height: 3, borderRadius: '50%',
-              background: dragging ? '#a855f7' : '#8b949e',
-            }} />
-          ))}
-        </div>
-      </div>
+      />
 
       {/* Right panel */}
       <div style={{

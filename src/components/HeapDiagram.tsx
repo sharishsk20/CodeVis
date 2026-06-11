@@ -31,7 +31,7 @@ export default function HeapDiagram({ heap, headPtr }: Props) {
     return (
       <div>
         <SectionLabel>heap memory</SectionLabel>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-tertiary)', padding: '6px 0' }}>
+        <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--t3)', padding: '6px 0' }}>
           heap is empty
         </div>
       </div>

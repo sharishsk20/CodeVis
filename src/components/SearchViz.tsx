@@ -157,15 +157,15 @@ export function isSearchStep(step: TraceStep | undefined): boolean {
 // ── Colour palette ────────────────────────────────────────────────────────────
 
 const C = {
-  dimmed:  { bg:'rgba(255,255,255,0.01)', border:'rgba(255,255,255,0.04)', text:'#3c4047'  },
-  normal:  { bg:'rgba(255,255,255,0.04)', border:'rgba(255,255,255,0.12)', text:'var(--text-secondary)' },
-  inRange: { bg:'rgba(34,211,238,0.05)',  border:'rgba(34,211,238,0.22)',  text:'var(--text-secondary)' },
-  cyan:    { bg:'rgba(34,211,238,0.16)',  border:'#22d3ee', text:'#67e8f9' },
-  amber:   { bg:'rgba(239,159,39,0.16)',  border:'#ef9f27', text:'#ef9f27' },
-  orange:  { bg:'rgba(251,146,60,0.16)',  border:'#fb923c', text:'#fdba74' },
-  purple:  { bg:'rgba(192,132,252,0.16)', border:'#c084fc', text:'#e9d5ff' },
-  violet:  { bg:'rgba(167,139,250,0.16)', border:'#a78bfa', text:'#c4b5fd' },
-  green:   { bg:'rgba(45,212,168,0.20)',  border:'#2dd4a8', text:'#2dd4a8' },
+  dimmed:  { bg:'rgba(255,255,255,0.01)', border:'rgba(255,255,255,0.04)', text:'var(--t3)'  },
+  normal:  { bg:'var(--surf)',            border:'var(--line)',            text:'var(--t2)'  },
+  inRange: { bg:'rgba(124,106,247,0.06)', border:'rgba(124,106,247,0.22)', text:'var(--t2)' },
+  cyan:    { bg:'rgba(34,211,238,0.12)',  border:'var(--cyan)',            text:'#67e8f9'    },
+  amber:   { bg:'rgba(245,158,11,0.12)',  border:'var(--amber)',           text:'var(--amber)' },
+  orange:  { bg:'rgba(251,146,60,0.12)',  border:'#fb923c',               text:'#fdba74'    },
+  purple:  { bg:'rgba(167,139,250,0.12)', border:'#a78bfa',               text:'#c4b5fd'    },
+  violet:  { bg:'rgba(124,106,247,0.12)', border:'var(--violet)',         text:'#a78bfa'    },
+  green:   { bg:'rgba(52,211,153,0.14)',  border:'var(--green)',          text:'var(--green)' },
 };
 
 function cellColor(x: number, f: SF) {
@@ -307,15 +307,15 @@ export default function SearchViz({ step }: Props) {
     <div>
       <SectionLabel>
         {f.name}
-        <span style={{ color:'var(--text-tertiary)', fontWeight:400, marginLeft:6 }}>
+        <span style={{ color:'var(--t3)', fontWeight:400, marginLeft:6 }}>
           {ALGO_LABEL[f.kind]} · {f.arr.length} items
         </span>
         <span style={{ flex:1 }} />
         <span style={{
-          fontFamily:'var(--font-mono)', fontSize:9.5,
-          color:'#22d3ee', background:'rgba(34,211,238,0.1)',
-          padding:'1px 6px', borderRadius:4,
-          border:'1px solid rgba(34,211,238,0.2)',
+          fontFamily:'var(--mono)', fontSize:9.5,
+          color:'var(--cyan)', background:'rgba(34,211,238,0.08)',
+          padding:'1px 6px', borderRadius:'var(--r-sm)',
+          border:'1px solid rgba(34,211,238,0.18)',
           textTransform:'none', letterSpacing:0,
         }}>target = {f.target}</span>
       </SectionLabel>
@@ -336,15 +336,15 @@ export default function SearchViz({ step }: Props) {
                   boxShadow: act ? `0 0 9px ${c.border}44` : 'none',
                 }}>
                   <span style={{
-                    fontFamily:'var(--font-mono)', fontSize:12,
+                    fontFamily:'var(--mono)', fontSize:12,
                     fontWeight: act ? 700 : 400,
                     color:c.text, transition:'color 0.22s',
                   }}>{v}</span>
                 </div>
-                <span style={{ fontSize:9, fontFamily:'var(--font-mono)', color: act ? c.text : 'var(--text-tertiary)', transition:'color 0.22s' }}>{x}</span>
+                <span style={{ fontSize:9, fontFamily:'var(--mono)', color: act ? c.text : 'var(--t3)', transition:'color 0.22s' }}>{x}</span>
                 <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1, minHeight:14 }}>
                   {pts.map(({ lbl, color }) => (
-                    <span key={lbl} style={{ fontSize:8.5, fontFamily:'var(--font-mono)', fontWeight:700, lineHeight:1.2, color }}>{lbl}</span>
+                    <span key={lbl} style={{ fontSize:8.5, fontFamily:'var(--mono)', fontWeight:700, lineHeight:1.2, color }}>{lbl}</span>
                   ))}
                 </div>
               </div>
@@ -374,7 +374,7 @@ function RangeBar({ n, lo, hi, probe, probeColor, label }:
           }} />
         ))}
       </div>
-      <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color:probeColor }}>{label}</span>
+      <span style={{ fontFamily:'var(--mono)', fontSize:9.5, color:probeColor }}>{label}</span>
     </div>
   );
 }
@@ -382,7 +382,7 @@ function RangeBar({ n, lo, hi, probe, probeColor, label }:
 function Pill({ text, color, bg }: { text:string; color:string; bg:string }) {
   return (
     <span style={{
-      fontSize:9, fontFamily:'var(--font-mono)', fontWeight:600,
+      fontSize:9, fontFamily:'var(--mono)', fontWeight:600,
       padding:'1px 7px', borderRadius:3, background:bg, color,
       border:`1px solid ${color}44`, flexShrink:0,
     }}>{text}</span>
@@ -420,9 +420,9 @@ function AlgoStatus({ f }: { f: SF }) {
         : null;
     return (
       <div style={{ marginTop:8 }}>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--text-tertiary)', marginBottom:3 }}>interpolation formula</div>
-        <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color, wordBreak:'break-all' }}>{formula}</div>
-        {statusLine && <div style={{ marginTop:4, fontFamily:'var(--font-mono)', fontSize:9.5, color }}>{statusLine}</div>}
+        <div style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--t3)', marginBottom:3 }}>interpolation formula</div>
+        <div style={{ fontFamily:'var(--mono)', fontSize:9.5, color, wordBreak:'break-all' }}>{formula}</div>
+        {statusLine && <div style={{ marginTop:4, fontFamily:'var(--mono)', fontSize:9.5, color }}>{statusLine}</div>}
       </div>
     );
   }
@@ -447,7 +447,7 @@ function AlgoStatus({ f }: { f: SF }) {
             color={phase === 'jump' ? '#a78bfa' : '#ef9f27'}
             bg={phase === 'jump' ? 'rgba(167,139,250,0.1)' : 'rgba(239,159,39,0.1)'}
           />
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color }}>{label}</span>
+          <span style={{ fontFamily:'var(--mono)', fontSize:9.5, color }}>{label}</span>
         </div>
         <div style={{ display:'flex', height:4, borderRadius:3, overflow:'hidden', background:'rgba(255,255,255,0.04)' }}>
           {Array.from({ length:n }, (_,x) => (
@@ -477,7 +477,7 @@ function AlgoStatus({ f }: { f: SF }) {
         <div style={{ marginTop:8 }}>
           <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:5 }}>
             <Pill text="⬡ binary phase" color="#22d3ee" bg="rgba(34,211,238,0.08)" />
-            <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color }}>{label}</span>
+            <span style={{ fontFamily:'var(--mono)', fontSize:9.5, color }}>{label}</span>
           </div>
           <RangeBar n={n} lo={lo} hi={hi} probe={f.mid} probeColor={color} label="" />
         </div>
@@ -490,7 +490,7 @@ function AlgoStatus({ f }: { f: SF }) {
       <div style={{ marginTop:8 }}>
         <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:5 }}>
           <Pill text="↑↑ doubling" color="#ef9f27" bg="rgba(239,159,39,0.08)" />
-          <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color }}>
+          <span style={{ fontFamily:'var(--mono)', fontSize:9.5, color }}>
             {found ? `arr[${b}] = ${arr[b]} — found!` : `bound=${f.bound} → arr[${b}]=${arr[b]} ${arr[b]<=target?'≤':'>'} ${target}`}
           </span>
         </div>
@@ -510,7 +510,7 @@ function AlgoStatus({ f }: { f: SF }) {
   if (kind === 'ternary') {
     const lo = f.lo ?? 0, hi = f.hi ?? n-1;
     const f1 = hit(f.mid1), f2 = hit(f.mid2);
-    const color = (f1 || f2) ? '#2dd4a8' : 'var(--text-tertiary)';
+    const color = (f1 || f2) ? '#2dd4a8' : 'var(--t3)';
     const label = f1
       ? `arr[${f.mid1}] = ${arr[f.mid1!]} — found at m₁!`
       : f2
@@ -531,7 +531,7 @@ function AlgoStatus({ f }: { f: SF }) {
             }} />
           ))}
         </div>
-        <span style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color }}>{label}</span>
+        <span style={{ fontFamily:'var(--mono)', fontSize:9.5, color }}>{label}</span>
       </div>
     );
   }
@@ -545,14 +545,14 @@ function AlgoStatus({ f }: { f: SF }) {
         <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:3, flexWrap:'wrap' }}>
           {[['fibM',fib_m],['fibM1',fib_m1],['fibM2',fib_m2],['offset',offset]].map(([lbl,val]) =>
             val !== undefined && (
-              <span key={String(lbl)} style={{ fontFamily:'var(--font-mono)', fontSize:9, color:'var(--text-tertiary)' }}>
-                {lbl}=<span style={{ color:'var(--text-secondary)' }}>{String(val)}</span>
+              <span key={String(lbl)} style={{ fontFamily:'var(--mono)', fontSize:9, color:'var(--t3)' }}>
+                {lbl}=<span style={{ color:'var(--t2)' }}>{String(val)}</span>
               </span>
             )
           )}
         </div>
         {probe !== undefined && (
-          <div style={{ fontFamily:'var(--font-mono)', fontSize:9.5, color }}>
+          <div style={{ fontFamily:'var(--mono)', fontSize:9.5, color }}>
             {found
               ? `arr[${probe}] = ${arr[probe]} — found!`
               : `i=${probe}  arr[${probe}]=${arr[probe]} ${arr[probe]<target?'< target → shift offset right':'> target → shrink range'}`}

@@ -313,7 +313,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
     <div>
       <SectionLabel>
         linked list
-        <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
+        <span style={{ color: 'var(--t3)', fontWeight: 400, marginLeft: 6 }}>
           {nodeCount} node{nodeCount !== 1 ? 's' : ''}
         </span>
       </SectionLabel>
@@ -330,7 +330,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
             marginRight: 6, flexShrink: 0,
           }}>
             <span style={{
-              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 700,
               color: '#34d399', letterSpacing: '0.06em', marginBottom: 4,
             }}>HEAD</span>
             <svg width="24" height="12" viewBox="0 0 24 12" fill="none">
@@ -347,7 +347,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
           // Node accent color based on pointer labels
           const nodeAccent = hasPointers
             ? (node.labels.some(isHeadLabel) ? '#2dd4a8' : '#38bdf8')
-            : 'var(--border)';
+            : 'var(--line)';
 
           return (
             <React.Fragment key={node.id}>
@@ -372,7 +372,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                       }}>
                         <span style={{
-                          fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                          fontSize: 11, fontFamily: 'var(--mono)', fontWeight: 800,
                           background: pillBg, color: pillColor,
                           border: `1.5px solid ${pillBorder}`,
                           padding: '2px 10px', borderRadius: 6,
@@ -392,9 +392,9 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                 <div style={{
                   display: 'flex', height: 60, minWidth: 140,
                   background: hasPointers
-                    ? `linear-gradient(135deg, var(--bg-surface), rgba(${nodeAccent === '#2dd4a8' ? '29,158,117' : '56,189,248'},0.04))`
-                    : 'var(--bg-surface)',
-                  border: `2.5px solid ${hasPointers ? nodeAccent : 'var(--border)'}`,
+                    ? `linear-gradient(135deg, var(--surf), rgba(${nodeAccent === '#2dd4a8' ? '29,158,117' : '56,189,248'},0.04))`
+                    : 'var(--surf)',
+                  border: `2.5px solid ${hasPointers ? nodeAccent : 'var(--line)'}`,
                   borderRadius: 10, overflow: 'hidden',
                   boxShadow: hasPointers
                     ? `0 0 20px ${nodeAccent}20, 0 4px 16px rgba(0,0,0,0.3)`
@@ -406,16 +406,16 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                     flex: 1, display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'center',
                     padding: '0 16px', position: 'relative',
-                    borderRight: '2px solid var(--border)',
+                    borderRight: '2px solid var(--line)',
                   }}>
                     <span style={{
-                      fontSize: 8, fontFamily: 'var(--font-mono)', fontWeight: 600,
-                      color: 'var(--text-tertiary)', letterSpacing: '0.06em',
+                      fontSize: 8, fontFamily: 'var(--mono)', fontWeight: 600,
+                      color: 'var(--t3)', letterSpacing: '0.06em',
                       position: 'absolute', top: 4, left: 8,
                     }}>DATA</span>
                     <span style={{
-                      fontSize: 20, fontFamily: 'var(--font-mono)',
-                      fontWeight: 800, color: 'var(--text-primary)',
+                      fontSize: 20, fontFamily: 'var(--mono)',
+                      fontWeight: 800, color: 'var(--t1)',
                       letterSpacing: '-0.01em',
                     }}>
                       {node.val}
@@ -429,8 +429,8 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                     background: 'rgba(255,255,255,0.02)', position: 'relative',
                   }}>
                     <span style={{
-                      fontSize: 7, fontFamily: 'var(--font-mono)', fontWeight: 600,
-                      color: 'var(--text-tertiary)', letterSpacing: '0.06em',
+                      fontSize: 7, fontFamily: 'var(--mono)', fontWeight: 600,
+                      color: 'var(--t3)', letterSpacing: '0.06em',
                       position: 'absolute', top: 4,
                     }}>NEXT</span>
                     {/* Pointer dot */}
@@ -454,7 +454,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
                   border: '1px solid rgba(88,166,255,0.15)',
                 }}>
                   <span style={{
-                    fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700,
+                    fontSize: 12, fontFamily: 'var(--mono)', fontWeight: 700,
                     color: '#58a6ff',
                     textShadow: '0 0 2px rgba(88,166,255,0.15)',
                     letterSpacing: '0.02em',
@@ -498,7 +498,7 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
           alignItems: 'center', justifyContent: 'center',
           border: '2.5px dashed rgba(139,148,158,0.3)', borderRadius: 10,
           color: '#8b949e', fontSize: 12, fontWeight: 800,
-          fontFamily: 'var(--font-mono)', flexShrink: 0, marginTop: -20,
+          fontFamily: 'var(--mono)', flexShrink: 0, marginTop: -20,
           background: 'rgba(139,148,158,0.03)',
           letterSpacing: '0.06em',
           gap: 4,
@@ -527,17 +527,17 @@ function LinkedListVisual({ nodes }: { nodes: LinkedListNode[] }) {
             <line x1="6.5" y1="7" x2="7.5" y2="7" stroke="#22d3ee" strokeWidth="1.2" />
           </svg>
           <span style={{
-            fontSize: 10, fontFamily: 'var(--font-mono)',
-            color: 'var(--text-tertiary)',
+            fontSize: 10, fontFamily: 'var(--mono)',
+            color: 'var(--t3)',
           }}>
             {nodeCount} node{nodeCount !== 1 ? 's' : ''} linked
           </span>
         </div>
 
-        <div style={{ flex: 1, height: 1, background: 'var(--border)', opacity: 0.4 }} />
+        <div style={{ flex: 1, height: 1, background: 'var(--line)', opacity: 0.4 }} />
 
         <span style={{
-          fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+          fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--t3)',
         }}>
           {nodes[0]?.id ?? '—'} → … → NULL
         </span>
@@ -554,7 +554,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
     <div>
       <SectionLabel>
         {data.name}
-        <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
+        <span style={{ color: 'var(--t3)', fontWeight: 400, marginLeft: 6 }}>
           stack · {total} element{total !== 1 ? 's' : ''}
         </span>
       </SectionLabel>
@@ -573,7 +573,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
           }}>
             <span style={{
-              fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              fontSize: 8.5, fontFamily: 'var(--mono)', fontWeight: 700,
               color: '#34d399', letterSpacing: '0.05em',
             }}>PUSH</span>
             <svg width="16" height="24" viewBox="0 0 16 24" fill="none">
@@ -583,7 +583,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
 
           {/* Divider */}
           <div style={{
-            width: 1, height: 12, background: 'var(--border)',
+            width: 1, height: 12, background: 'var(--line)',
           }} />
 
           {/* POP arrow (up out of stack) */}
@@ -594,7 +594,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
               <path d="M8 24 L8 6 M3 10 L8 4 L13 10" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span style={{
-              fontSize: 8.5, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              fontSize: 8.5, fontFamily: 'var(--mono)', fontWeight: 700,
               color: '#f97316', letterSpacing: '0.05em',
             }}>POP</span>
           </div>
@@ -605,8 +605,8 @@ function StackVisual({ data }: { data: StackQueueData }) {
           {/* Stack opening bracket top */}
           <div style={{
             width: 200, height: 4,
-            borderLeft: '3px solid var(--accent-violet)',
-            borderRight: '3px solid var(--accent-violet)',
+            borderLeft: '3px solid var(--violet)',
+            borderRight: '3px solid var(--violet)',
             opacity: 0.4,
           }} />
 
@@ -615,9 +615,9 @@ function StackVisual({ data }: { data: StackQueueData }) {
             display: 'flex', flexDirection: 'column-reverse', gap: 4,
             width: 200, minHeight: 220,
             padding: '6px 6px 10px',
-            borderLeft: '3px solid var(--accent-violet)',
-            borderRight: '3px solid var(--accent-violet)',
-            borderBottom: '3px solid var(--accent-violet)',
+            borderLeft: '3px solid var(--violet)',
+            borderRight: '3px solid var(--violet)',
+            borderBottom: '3px solid var(--violet)',
             borderRadius: '0 0 14px 14px',
             background: 'linear-gradient(180deg, rgba(168,85,247,0.01) 0%, rgba(168,85,247,0.05) 100%)',
             boxShadow: '0 12px 40px rgba(168,85,247,0.06), inset 0 -20px 40px rgba(168,85,247,0.02)',
@@ -635,8 +635,8 @@ function StackVisual({ data }: { data: StackQueueData }) {
                   <rect x="6" y="8" width="20" height="4" rx="1" stroke="#a855f7" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.25" />
                 </svg>
                 <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 11,
-                  color: 'var(--text-tertiary)', fontStyle: 'italic',
+                  fontFamily: 'var(--mono)', fontSize: 11,
+                  color: 'var(--t3)', fontStyle: 'italic',
                 }}>
                   empty
                 </span>
@@ -663,8 +663,8 @@ function StackVisual({ data }: { data: StackQueueData }) {
                     {/* Index badge */}
                     <span style={{
                       position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
-                      fontSize: 9, fontFamily: 'var(--font-mono)',
-                      color: isTop ? 'rgba(192,132,252,0.7)' : 'var(--text-tertiary)',
+                      fontSize: 9, fontFamily: 'var(--mono)',
+                      color: isTop ? 'rgba(192,132,252,0.7)' : 'var(--t3)',
                       fontWeight: 500,
                     }}>
                       {idx}
@@ -672,9 +672,9 @@ function StackVisual({ data }: { data: StackQueueData }) {
 
                     {/* Value */}
                     <span style={{
-                      fontFamily: 'var(--font-mono)', fontSize: 14,
+                      fontFamily: 'var(--mono)', fontSize: 14,
                       fontWeight: isTop ? 700 : 500,
-                      color: isTop ? '#f0e6ff' : 'var(--text-primary)',
+                      color: isTop ? '#f0e6ff' : 'var(--t1)',
                       letterSpacing: isTop ? '0.01em' : undefined,
                     }}>
                       {typeof el === 'object' ? JSON.stringify(el) : String(el)}
@@ -690,7 +690,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
                           <path d="M0 5 H12 M8 1 L13 5 L8 9" stroke="#c084fc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         <span style={{
-                          fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                          fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 800,
                           color: '#c084fc',
                           background: 'rgba(168,85,247,0.12)',
                           border: '1.5px solid rgba(168,85,247,0.3)',
@@ -706,8 +706,8 @@ function StackVisual({ data }: { data: StackQueueData }) {
             )}
             {total > MAX_DISPLAY && (
               <div style={{
-                textAlign: 'center', fontSize: 10, color: 'var(--text-tertiary)',
-                fontFamily: 'var(--font-mono)', padding: '2px 0',
+                textAlign: 'center', fontSize: 10, color: 'var(--t3)',
+                fontFamily: 'var(--mono)', padding: '2px 0',
               }}>
                 +{total - MAX_DISPLAY} more…
               </div>
@@ -734,7 +734,7 @@ function StackVisual({ data }: { data: StackQueueData }) {
               }} />
             </div>
             <span style={{
-              fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+              fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--t3)',
               flexShrink: 0,
             }}>
               {total}/{MAX_DISPLAY}
@@ -753,7 +753,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
     <div>
       <SectionLabel>
         {data.name}
-        <span style={{ color: 'var(--text-tertiary)', fontWeight: 400, marginLeft: 6 }}>
+        <span style={{ color: 'var(--t3)', fontWeight: 400, marginLeft: 6 }}>
           queue · {total} element{total !== 1 ? 's' : ''}
         </span>
       </SectionLabel>
@@ -776,7 +776,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
               <path d="M16 6 H4 M8 2 L3 6 L8 10" stroke="#22d3ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span style={{
-              fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 700,
               color: '#22d3ee', letterSpacing: '0.06em',
             }}>DEQUEUE</span>
           </div>
@@ -799,7 +799,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
             display: 'flex', alignItems: 'center', gap: 5,
           }}>
             <span style={{
-              fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700,
+              fontSize: 10, fontFamily: 'var(--mono)', fontWeight: 700,
               color: '#a855f7', letterSpacing: '0.06em',
             }}>ENQUEUE</span>
             <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
@@ -861,8 +861,8 @@ function QueueVisual({ data }: { data: StackQueueData }) {
                   <rect x="22" y="4" width="12" height="12" rx="2" stroke="#22d3ee" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
                 </svg>
                 <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: 11,
-                  color: 'var(--text-tertiary)', fontStyle: 'italic',
+                  fontFamily: 'var(--mono)', fontSize: 11,
+                  color: 'var(--t3)', fontStyle: 'italic',
                 }}>
                   empty
                 </span>
@@ -896,9 +896,9 @@ function QueueVisual({ data }: { data: StackQueueData }) {
                     }}>
                       {/* Value */}
                       <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 14,
+                        fontFamily: 'var(--mono)', fontSize: 14,
                         fontWeight: isSpecial ? 700 : 500,
-                        color: isFront ? '#a5f3fc' : isRear ? '#e9d5ff' : 'var(--text-primary)',
+                        color: isFront ? '#a5f3fc' : isRear ? '#e9d5ff' : 'var(--t1)',
                       }}>
                         {typeof el === 'object' ? JSON.stringify(el) : String(el)}
                       </span>
@@ -906,8 +906,8 @@ function QueueVisual({ data }: { data: StackQueueData }) {
                       {/* Index */}
                       <span style={{
                         position: 'absolute', top: 3, left: 5,
-                        fontSize: 8, fontFamily: 'var(--font-mono)',
-                        color: isFront ? 'rgba(34,211,238,0.4)' : isRear ? 'rgba(168,85,247,0.4)' : 'var(--text-tertiary)',
+                        fontSize: 8, fontFamily: 'var(--mono)',
+                        color: isFront ? 'rgba(34,211,238,0.4)' : isRear ? 'rgba(168,85,247,0.4)' : 'var(--t3)',
                       }}>
                         {idx}
                       </span>
@@ -920,7 +920,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
                         }}>
                           {isFront && (
                             <span style={{
-                              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 800,
                               color: '#22d3ee', background: 'rgba(34,211,238,0.1)',
                               padding: '1px 7px', borderRadius: 4,
                               border: '1.5px solid rgba(34,211,238,0.25)',
@@ -929,7 +929,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
                           )}
                           {isRear && (
                             <span style={{
-                              fontSize: 9, fontFamily: 'var(--font-mono)', fontWeight: 800,
+                              fontSize: 9, fontFamily: 'var(--mono)', fontWeight: 800,
                               color: '#c084fc', background: 'rgba(168,85,247,0.1)',
                               padding: '1px 7px', borderRadius: 4,
                               border: '1.5px solid rgba(168,85,247,0.25)',
@@ -964,7 +964,7 @@ function QueueVisual({ data }: { data: StackQueueData }) {
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <span style={{
-            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#22d3ee', flexShrink: 0,
+            fontSize: 9, fontFamily: 'var(--mono)', color: '#22d3ee', flexShrink: 0,
           }}>OUT</span>
           <div style={{
             flex: 1, height: 3, borderRadius: 2,
@@ -980,10 +980,10 @@ function QueueVisual({ data }: { data: StackQueueData }) {
             }} />
           </div>
           <span style={{
-            fontSize: 9, fontFamily: 'var(--font-mono)', color: '#a855f7', flexShrink: 0,
+            fontSize: 9, fontFamily: 'var(--mono)', color: '#a855f7', flexShrink: 0,
           }}>IN</span>
           <span style={{
-            fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)',
+            fontSize: 9, fontFamily: 'var(--mono)', color: 'var(--t3)',
             marginLeft: 4, flexShrink: 0,
           }}>
             {total} item{total !== 1 ? 's' : ''}
